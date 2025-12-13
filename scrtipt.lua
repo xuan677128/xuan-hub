@@ -15,15 +15,17 @@ pcall(function()
     if not isfolder(SCRIPTS_FOLDER) then makefolder(SCRIPTS_FOLDER) end
 end)
 
--- Bright pink color scheme
-local PANEL_BG = Color3.fromRGB(250, 235, 245)
-local PANEL_TOP = Color3.fromRGB(252, 104, 170)
-local PINK_PRIMARY = Color3.fromRGB(252, 104, 170)
-local PINK_SECONDARY = Color3.fromRGB(255, 143, 194)
-local PINK_LIGHT = Color3.fromRGB(255, 182, 214)
-local PINK_ACCENT = Color3.fromRGB(230, 80, 150)
-local TEXT_COLOR = Color3.fromRGB(60, 20, 50)
-local TEXT_DIM = Color3.fromRGB(150, 80, 120)
+-- Modern pink color scheme
+local PANEL_BG = Color3.fromRGB(255, 250, 252)
+local PANEL_TOP = Color3.fromRGB(255, 105, 180)
+local PINK_PRIMARY = Color3.fromRGB(255, 105, 180)
+local PINK_SECONDARY = Color3.fromRGB(255, 182, 214)
+local PINK_LIGHT = Color3.fromRGB(255, 218, 235)
+local PINK_ACCENT = Color3.fromRGB(255, 130, 195)
+local CARD_BG = Color3.fromRGB(255, 255, 255)
+local TEXT_COLOR = Color3.fromRGB(40, 40, 60)
+local TEXT_DIM = Color3.fromRGB(120, 100, 130)
+local SHADOW_COLOR = Color3.fromRGB(255, 182, 214)
 
 -- GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -51,6 +53,9 @@ local AutoExecExecBtn = Instance.new("TextButton")
 
 local Status = Instance.new("TextLabel")
 
+-- Floating reopen button
+local FloatingBtn = Instance.new("TextButton")
+
 ScreenGui.Name = "XuanHubScriptManager"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
@@ -58,114 +63,180 @@ if not ScreenGui.Parent then ScreenGui.Parent = game.Players.LocalPlayer:WaitFor
 
 -- Main Frame
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 420, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -190)
-MainFrame.BackgroundColor3 = PANEL_BG
-MainFrame.BorderSizePixel = 1
-MainFrame.BorderColor3 = PINK_LIGHT
-MainFrame.ClipsDescendants = true
+MainFrame.Size = UDim2.new(0, 440, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -220, 0.5, -200)
+MainFrame.BackgroundColor3 = CARD_BG
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = false
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.Parent = MainFrame
+
+local mainShadow = Instance.new("ImageLabel")
+mainShadow.Name = "Shadow"
+mainShadow.Parent = MainFrame
+mainShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+mainShadow.BackgroundTransparency = 1
+mainShadow.Position = UDim2.new(0.5, 0, 0.5, 6)
+mainShadow.Size = UDim2.new(1, 30, 1, 30)
+mainShadow.ZIndex = -1
+mainShadow.Image = "rbxassetid://4996891970"
+mainShadow.ImageColor3 = SHADOW_COLOR
+mainShadow.ImageTransparency = 0.7
 
 -- Title Bar
 TitleBar.Parent = MainFrame
-TitleBar.Size = UDim2.new(1, -80, 0, 35)
+TitleBar.Size = UDim2.new(1, 0, 0, 50)
 TitleBar.BackgroundColor3 = PANEL_TOP
 TitleBar.BorderSizePixel = 0
 TitleBar.Text = "🌸 Xuan Hub"
 TitleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleBar.Font = Enum.Font.GothamBold
-TitleBar.TextSize = 15
+TitleBar.TextSize = 16
 TitleBar.TextXAlignment = Enum.TextXAlignment.Left
+TitleBar.ZIndex = 3
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 16)
+titleCorner.Parent = TitleBar
+
+local titleGradient = Instance.new("UIGradient")
+titleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, PANEL_TOP),
+    ColorSequenceKeypoint.new(1, PINK_ACCENT)
+}
+titleGradient.Rotation = 45
+titleGradient.Parent = TitleBar
+
 local titlePad = Instance.new("UIPadding", TitleBar)
-titlePad.PaddingLeft = UDim.new(0, 12)
+titlePad.PaddingLeft = UDim.new(0, 18)
 
 MinimizeBtn.Parent = MainFrame
-MinimizeBtn.Size = UDim2.new(0, 40, 0, 35)
-MinimizeBtn.Position = UDim2.new(1, -80, 0, 0)
-MinimizeBtn.BackgroundColor3 = PINK_ACCENT
+MinimizeBtn.Size = UDim2.new(0, 36, 0, 36)
+MinimizeBtn.Position = UDim2.new(1, -84, 0, 7)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.BackgroundTransparency = 0.3
 MinimizeBtn.BorderSizePixel = 0
 MinimizeBtn.Text = "—"
 MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 16
+MinimizeBtn.TextSize = 18
+MinimizeBtn.ZIndex = 4
+MinimizeBtn.AutoButtonColor = false
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(1, 0)
+minCorner.Parent = MinimizeBtn
 
 CloseBtn.Parent = MainFrame
-CloseBtn.Size = UDim2.new(0, 40, 0, 35)
-CloseBtn.Position = UDim2.new(1, -40, 0, 0)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 100)
+CloseBtn.Size = UDim2.new(0, 36, 0, 36)
+CloseBtn.Position = UDim2.new(1, -44, 0, 7)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 120)
 CloseBtn.BorderSizePixel = 0
 CloseBtn.Text = "×"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 22
+CloseBtn.TextSize = 24
+CloseBtn.ZIndex = 4
+CloseBtn.AutoButtonColor = false
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = CloseBtn
 
 -- Tabs
 TabFrame.Parent = MainFrame
-TabFrame.Size = UDim2.new(1, 0, 0, 32)
-TabFrame.Position = UDim2.new(0, 0, 0, 35)
-TabFrame.BackgroundColor3 = Color3.fromRGB(255, 220, 240)
+TabFrame.Size = UDim2.new(1, -32, 0, 44)
+TabFrame.Position = UDim2.new(0, 16, 0, 58)
+TabFrame.BackgroundTransparency = 1
 TabFrame.BorderSizePixel = 0
 
 ScriptsTab.Parent = TabFrame
-ScriptsTab.Size = UDim2.new(0.5, 0, 1, 0)
+ScriptsTab.Size = UDim2.new(0.48, 0, 1, 0)
 ScriptsTab.Position = UDim2.new(0, 0, 0, 0)
-ScriptsTab.BackgroundColor3 = PINK_SECONDARY
+ScriptsTab.BackgroundColor3 = PINK_PRIMARY
 ScriptsTab.BorderSizePixel = 0
 ScriptsTab.Text = "📜 Scripts"
 ScriptsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
 ScriptsTab.Font = Enum.Font.GothamBold
 ScriptsTab.TextSize = 13
+ScriptsTab.AutoButtonColor = false
+
+local scriptsCorner = Instance.new("UICorner")
+scriptsCorner.CornerRadius = UDim.new(0, 12)
+scriptsCorner.Parent = ScriptsTab
 
 AutoExecTab.Parent = TabFrame
-AutoExecTab.Size = UDim2.new(0.5, 0, 1, 0)
-AutoExecTab.Position = UDim2.new(0.5, 0, 0, 0)
+AutoExecTab.Size = UDim2.new(0.48, 0, 1, 0)
+AutoExecTab.Position = UDim2.new(0.52, 0, 0, 0)
 AutoExecTab.BackgroundColor3 = PINK_LIGHT
 AutoExecTab.BorderSizePixel = 0
 AutoExecTab.Text = "⚡ Auto Execute"
 AutoExecTab.TextColor3 = TEXT_COLOR
 AutoExecTab.Font = Enum.Font.GothamBold
 AutoExecTab.TextSize = 13
+AutoExecTab.AutoButtonColor = false
+
+local autoCorner = Instance.new("UICorner")
+autoCorner.CornerRadius = UDim.new(0, 12)
+autoCorner.Parent = AutoExecTab
 
 -- Scripts Panel
 ScriptsPanel.Parent = MainFrame
-ScriptsPanel.Size = UDim2.new(1, 0, 1, -102)
-ScriptsPanel.Position = UDim2.new(0, 0, 0, 67)
-ScriptsPanel.BackgroundColor3 = PANEL_BG
+ScriptsPanel.Size = UDim2.new(1, 0, 1, -128)
+ScriptsPanel.Position = UDim2.new(0, 0, 0, 110)
+ScriptsPanel.BackgroundTransparency = 1
 ScriptsPanel.BorderSizePixel = 0
 ScriptsPanel.Visible = true
 
 ScriptsList.Parent = ScriptsPanel
-ScriptsList.Size = UDim2.new(1, -16, 1, -50)
-ScriptsList.Position = UDim2.new(0, 8, 0, 8)
-ScriptsList.BackgroundColor3 = Color3.fromRGB(255, 245, 250)
-ScriptsList.BorderSizePixel = 1
-ScriptsList.BorderColor3 = PINK_LIGHT
-ScriptsList.ScrollBarThickness = 5
+ScriptsList.Size = UDim2.new(1, -32, 1, -58)
+ScriptsList.Position = UDim2.new(0, 16, 0, 4)
+ScriptsList.BackgroundColor3 = Color3.fromRGB(248, 248, 252)
+ScriptsList.BorderSizePixel = 0
+ScriptsList.ScrollBarThickness = 4
+ScriptsList.ScrollBarImageColor3 = PINK_SECONDARY
 ScriptsList.CanvasSize = UDim2.new(0, 0, 0, 0)
 
+local listCorner = Instance.new("UICorner")
+listCorner.CornerRadius = UDim.new(0, 12)
+listCorner.Parent = ScriptsList
+
 AddNewBtn.Parent = ScriptsPanel
-AddNewBtn.Size = UDim2.new(1, -16, 0, 34)
-AddNewBtn.Position = UDim2.new(0, 8, 1, -42)
+AddNewBtn.Size = UDim2.new(1, -32, 0, 42)
+AddNewBtn.Position = UDim2.new(0, 16, 1, -46)
 AddNewBtn.BackgroundColor3 = PINK_PRIMARY
 AddNewBtn.BorderSizePixel = 0
 AddNewBtn.Text = "+ New Script"
 AddNewBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AddNewBtn.Font = Enum.Font.GothamBold
-AddNewBtn.TextSize = 13
+AddNewBtn.TextSize = 14
+AddNewBtn.AutoButtonColor = false
+
+local addCorner = Instance.new("UICorner")
+addCorner.CornerRadius = UDim.new(0, 12)
+addCorner.Parent = AddNewBtn
+
+local addStroke = Instance.new("UIStroke")
+addStroke.Color = PINK_ACCENT
+addStroke.Thickness = 0
+addStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+addStroke.Parent = AddNewBtn
 
 -- AutoExec Panel
 AutoExecPanel.Parent = MainFrame
-AutoExecPanel.Size = UDim2.new(1, 0, 1, -102)
-AutoExecPanel.Position = UDim2.new(0, 0, 0, 67)
-AutoExecPanel.BackgroundColor3 = PANEL_BG
+AutoExecPanel.Size = UDim2.new(1, 0, 1, -128)
+AutoExecPanel.Position = UDim2.new(0, 0, 0, 110)
+AutoExecPanel.BackgroundTransparency = 1
 AutoExecPanel.BorderSizePixel = 0
 AutoExecPanel.Visible = false
 
 AutoExecBox.Parent = AutoExecPanel
-AutoExecBox.Size = UDim2.new(1, -16, 1, -52)
-AutoExecBox.Position = UDim2.new(0, 8, 0, 8)
-AutoExecBox.BackgroundColor3 = Color3.fromRGB(255, 245, 250)
-AutoExecBox.BorderSizePixel = 1
-AutoExecBox.BorderColor3 = PINK_LIGHT
+AutoExecBox.Size = UDim2.new(1, -32, 1, -58)
+AutoExecBox.Position = UDim2.new(0, 16, 0, 4)
+AutoExecBox.BackgroundColor3 = Color3.fromRGB(248, 248, 252)
+AutoExecBox.BorderSizePixel = 0
 AutoExecBox.TextColor3 = TEXT_COLOR
 AutoExecBox.PlaceholderText = "-- Auto-execute script (runs on join)"
 AutoExecBox.PlaceholderColor3 = TEXT_DIM
@@ -178,46 +249,104 @@ AutoExecBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoExecBox.Font = Enum.Font.Code
 AutoExecBox.TextSize = 13
 
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 12)
+boxCorner.Parent = AutoExecBox
+
+local boxPad = Instance.new("UIPadding")
+boxPad.PaddingLeft = UDim.new(0, 12)
+boxPad.PaddingRight = UDim.new(0, 12)
+boxPad.PaddingTop = UDim.new(0, 10)
+boxPad.PaddingBottom = UDim.new(0, 10)
+boxPad.Parent = AutoExecBox
+
 AutoExecSaveBtn.Parent = AutoExecPanel
-AutoExecSaveBtn.Size = UDim2.new(0.32, -6, 0, 36)
-AutoExecSaveBtn.Position = UDim2.new(0, 8, 1, -44)
+AutoExecSaveBtn.Size = UDim2.new(0.31, 0, 0, 40)
+AutoExecSaveBtn.Position = UDim2.new(0, 16, 1, -44)
 AutoExecSaveBtn.BackgroundColor3 = PINK_PRIMARY
 AutoExecSaveBtn.BorderSizePixel = 0
 AutoExecSaveBtn.Text = "💾 Save"
 AutoExecSaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecSaveBtn.Font = Enum.Font.GothamBold
 AutoExecSaveBtn.TextSize = 13
+AutoExecSaveBtn.AutoButtonColor = false
+
+local saveCorner = Instance.new("UICorner")
+saveCorner.CornerRadius = UDim.new(0, 10)
+saveCorner.Parent = AutoExecSaveBtn
 
 AutoExecLoadBtn.Parent = AutoExecPanel
-AutoExecLoadBtn.Size = UDim2.new(0.32, -6, 0, 36)
-AutoExecLoadBtn.Position = UDim2.new(0.34, 3, 1, -44)
+AutoExecLoadBtn.Size = UDim2.new(0.31, 0, 0, 40)
+AutoExecLoadBtn.Position = UDim2.new(0.345, 0, 1, -44)
 AutoExecLoadBtn.BackgroundColor3 = PINK_SECONDARY
 AutoExecLoadBtn.BorderSizePixel = 0
 AutoExecLoadBtn.Text = "📂 Load"
 AutoExecLoadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecLoadBtn.Font = Enum.Font.GothamBold
 AutoExecLoadBtn.TextSize = 13
+AutoExecLoadBtn.AutoButtonColor = false
+
+local loadCorner = Instance.new("UICorner")
+loadCorner.CornerRadius = UDim.new(0, 10)
+loadCorner.Parent = AutoExecLoadBtn
 
 AutoExecExecBtn.Parent = AutoExecPanel
-AutoExecExecBtn.Size = UDim2.new(0.32, -6, 0, 36)
-AutoExecExecBtn.Position = UDim2.new(0.68, 6, 1, -44)
+AutoExecExecBtn.Size = UDim2.new(0.31, 0, 0, 40)
+AutoExecExecBtn.Position = UDim2.new(0.69, 0, 1, -44)
 AutoExecExecBtn.BackgroundColor3 = PINK_ACCENT
 AutoExecExecBtn.BorderSizePixel = 0
 AutoExecExecBtn.Text = "▶️ Run"
 AutoExecExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecExecBtn.Font = Enum.Font.GothamBold
 AutoExecExecBtn.TextSize = 13
+AutoExecExecBtn.AutoButtonColor = false
+
+local execCorner = Instance.new("UICorner")
+execCorner.CornerRadius = UDim.new(0, 10)
+execCorner.Parent = AutoExecExecBtn
 
 Status.Parent = MainFrame
-Status.Size = UDim2.new(1, 0, 0, 24)
-Status.Position = UDim2.new(0, 0, 1, -24)
-Status.BackgroundColor3 = Color3.fromRGB(255, 220, 240)
+Status.Size = UDim2.new(1, 0, 0, 28)
+Status.Position = UDim2.new(0, 0, 1, -28)
+Status.BackgroundColor3 = Color3.fromRGB(252, 245, 250)
 Status.BorderSizePixel = 0
 Status.Text = "✨ Ready"
 Status.TextColor3 = TEXT_DIM
 Status.Font = Enum.Font.Gotham
 Status.TextSize = 11
 Status.TextXAlignment = Enum.TextXAlignment.Center
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 16)
+statusCorner.Parent = Status
+
+-- Floating Button (hidden by default)
+FloatingBtn.Parent = ScreenGui
+FloatingBtn.Size = UDim2.new(0, 70, 0, 70)
+FloatingBtn.Position = UDim2.new(1, -90, 1, -90)
+FloatingBtn.BackgroundColor3 = PINK_PRIMARY
+FloatingBtn.BorderSizePixel = 0
+FloatingBtn.Text = "Xuan"
+FloatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FloatingBtn.Font = Enum.Font.GothamBold
+FloatingBtn.TextSize = 16
+FloatingBtn.Visible = false
+FloatingBtn.AutoButtonColor = false
+
+local floatCorner = Instance.new("UICorner")
+floatCorner.CornerRadius = UDim.new(1, 0)
+floatCorner.Parent = FloatingBtn
+
+local floatShadow = Instance.new("ImageLabel")
+floatShadow.Parent = FloatingBtn
+floatShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+floatShadow.BackgroundTransparency = 1
+floatShadow.Position = UDim2.new(0.5, 0, 0.5, 4)
+floatShadow.Size = UDim2.new(1, 20, 1, 20)
+floatShadow.ZIndex = -1
+floatShadow.Image = "rbxassetid://4996891970"
+floatShadow.ImageColor3 = SHADOW_COLOR
+floatShadow.ImageTransparency = 0.5
 
 -- LOGIC
 local currentScriptName = nil
@@ -261,25 +390,58 @@ local function showContextMenu(btn, filename)
     
     contextMenu = Instance.new("Frame")
     contextMenu.Parent = ScreenGui
-    contextMenu.Size = UDim2.new(0, 140, 0, 140)
-    contextMenu.Position = UDim2.new(0, btn.AbsolutePosition.X + btn.AbsoluteSize.X + 5, 0, btn.AbsolutePosition.Y)
-    contextMenu.BackgroundColor3 = Color3.fromRGB(255, 240, 250)
-    contextMenu.BorderSizePixel = 1
-    contextMenu.BorderColor3 = PINK_PRIMARY
+    contextMenu.Size = UDim2.new(0, 150, 0, 150)
+    contextMenu.Position = UDim2.new(0, btn.AbsolutePosition.X + btn.AbsoluteSize.X + 8, 0, btn.AbsolutePosition.Y)
+    contextMenu.BackgroundColor3 = CARD_BG
+    contextMenu.BorderSizePixel = 0
     contextMenu.ZIndex = 100
+    
+    local menuCorner = Instance.new("UICorner")
+    menuCorner.CornerRadius = UDim.new(0, 12)
+    menuCorner.Parent = contextMenu
+    
+    local menuShadow = Instance.new("ImageLabel")
+    menuShadow.Parent = contextMenu
+    menuShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    menuShadow.BackgroundTransparency = 1
+    menuShadow.Position = UDim2.new(0.5, 0, 0.5, 4)
+    menuShadow.Size = UDim2.new(1, 20, 1, 20)
+    menuShadow.ZIndex = 99
+    menuShadow.Image = "rbxassetid://4996891970"
+    menuShadow.ImageColor3 = SHADOW_COLOR
+    menuShadow.ImageTransparency = 0.6
     
     local function createOption(text, yPos, callback)
         local opt = Instance.new("TextButton")
         opt.Parent = contextMenu
-        opt.Size = UDim2.new(1, 0, 0, 35)
-        opt.Position = UDim2.new(0, 0, 0, yPos)
-        opt.BackgroundColor3 = Color3.fromRGB(255, 245, 250)
+        opt.Size = UDim2.new(1, -8, 0, 36)
+        opt.Position = UDim2.new(0, 4, 0, yPos + 3)
+        opt.BackgroundColor3 = CARD_BG
         opt.BorderSizePixel = 0
         opt.Text = text
         opt.TextColor3 = TEXT_COLOR
-        opt.Font = Enum.Font.Gotham
+        opt.Font = Enum.Font.GothamSemibold
         opt.TextSize = 12
+        opt.TextXAlignment = Enum.TextXAlignment.Left
         opt.ZIndex = 101
+        opt.AutoButtonColor = false
+        
+        local optCorner = Instance.new("UICorner")
+        optCorner.CornerRadius = UDim.new(0, 8)
+        optCorner.Parent = opt
+        
+        local optPad = Instance.new("UIPadding")
+        optPad.PaddingLeft = UDim.new(0, 12)
+        optPad.Parent = opt
+        
+        opt.MouseEnter:Connect(function()
+            opt.BackgroundColor3 = PINK_LIGHT
+        end)
+        
+        opt.MouseLeave:Connect(function()
+            opt.BackgroundColor3 = CARD_BG
+        end)
+        
         opt.MouseButton1Click:Connect(function()
             callback()
             contextMenu:Destroy()
@@ -338,22 +500,41 @@ local function refreshScriptList()
     for _, filename in ipairs(files) do
         local btn = Instance.new("TextButton")
         btn.Parent = ScriptsList
-        btn.Size = UDim2.new(1, -6, 0, 30)
-        btn.Position = UDim2.new(0, 3, 0, yOffset)
-        btn.BackgroundColor3 = Color3.fromRGB(255, 225, 245)
+        btn.Size = UDim2.new(1, -16, 0, 38)
+        btn.Position = UDim2.new(0, 8, 0, yOffset)
+        btn.BackgroundColor3 = CARD_BG
         btn.BorderSizePixel = 0
         btn.Text = "  📄 " .. filename:gsub("%.txt$", ""):gsub("%.lua$", "")
         btn.TextColor3 = TEXT_COLOR
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 12
+        btn.Font = Enum.Font.GothamSemibold
+        btn.TextSize = 13
         btn.TextXAlignment = Enum.TextXAlignment.Left
+        btn.AutoButtonColor = false
+        
+        local itemCorner = Instance.new("UICorner")
+        itemCorner.CornerRadius = UDim.new(0, 8)
+        itemCorner.Parent = btn
+        
+        local itemStroke = Instance.new("UIStroke")
+        itemStroke.Color = PINK_LIGHT
+        itemStroke.Thickness = 1
+        itemStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        itemStroke.Parent = btn
+        
+        btn.MouseEnter:Connect(function()
+            btn.BackgroundColor3 = PINK_LIGHT
+        end)
+        
+        btn.MouseLeave:Connect(function()
+            btn.BackgroundColor3 = CARD_BG
+        end)
         
         btn.MouseButton1Click:Connect(function()
             showContextMenu(btn, filename)
         end)
         
         table.insert(scriptButtons, btn)
-        yOffset = yOffset + 33
+        yOffset = yOffset + 42
     end
     
     ScriptsList.CanvasSize = UDim2.new(0, 0, 0, yOffset)
@@ -426,15 +607,78 @@ CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
+-- Button hover effects
+MinimizeBtn.MouseEnter:Connect(function()
+    MinimizeBtn.BackgroundTransparency = 0.1
+end)
+MinimizeBtn.MouseLeave:Connect(function()
+    MinimizeBtn.BackgroundTransparency = 0.3
+end)
+
+CloseBtn.MouseEnter:Connect(function()
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 100)
+end)
+CloseBtn.MouseLeave:Connect(function()
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 120)
+end)
+
+AddNewBtn.MouseEnter:Connect(function()
+    AddNewBtn.BackgroundColor3 = PINK_ACCENT
+end)
+AddNewBtn.MouseLeave:Connect(function()
+    AddNewBtn.BackgroundColor3 = PINK_PRIMARY
+end)
+
+AutoExecSaveBtn.MouseEnter:Connect(function()
+    AutoExecSaveBtn.BackgroundColor3 = PINK_ACCENT
+end)
+AutoExecSaveBtn.MouseLeave:Connect(function()
+    AutoExecSaveBtn.BackgroundColor3 = PINK_PRIMARY
+end)
+
+AutoExecLoadBtn.MouseEnter:Connect(function()
+    AutoExecLoadBtn.BackgroundColor3 = PINK_LIGHT
+end)
+AutoExecLoadBtn.MouseLeave:Connect(function()
+    AutoExecLoadBtn.BackgroundColor3 = PINK_SECONDARY
+end)
+
+AutoExecExecBtn.MouseEnter:Connect(function()
+    AutoExecExecBtn.BackgroundColor3 = Color3.fromRGB(255, 150, 205)
+end)
+AutoExecExecBtn.MouseLeave:Connect(function()
+    AutoExecExecBtn.BackgroundColor3 = PINK_ACCENT
+end)
+
+FloatingBtn.MouseEnter:Connect(function()
+    FloatingBtn.Size = UDim2.new(0, 76, 0, 76)
+end)
+FloatingBtn.MouseLeave:Connect(function()
+    FloatingBtn.Size = UDim2.new(0, 70, 0, 70)
+end)
+
 local minimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
+
+local function toggleMinimize()
     minimized = not minimized
     if minimized then
-        MainFrame.Size = UDim2.new(0, 420, 0, 35)
+        MainFrame.Size = UDim2.new(0, 440, 0, 50)
         MinimizeBtn.Text = "□"
+        FloatingBtn.Visible = true
     else
-        MainFrame.Size = UDim2.new(0, 420, 0, 380)
+        MainFrame.Size = UDim2.new(0, 440, 0, 400)
         MinimizeBtn.Text = "—"
+        FloatingBtn.Visible = false
+    end
+end
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    toggleMinimize()
+end)
+
+FloatingBtn.MouseButton1Click:Connect(function()
+    if minimized then
+        toggleMinimize()
     end
 end)
 
