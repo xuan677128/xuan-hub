@@ -605,7 +605,7 @@ local function showContextMenu(btn, filename)
         renameInput:CaptureFocus()
     end)
     
-    createOption("🗑️ Delete", 140, function)
+    createOption("🗑️ Delete", 140, function()
         local filepath = SCRIPTS_FOLDER .. "/" .. filename
         if isfile(filepath) then
             delfile(filepath)
