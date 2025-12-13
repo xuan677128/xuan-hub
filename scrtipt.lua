@@ -469,6 +469,39 @@ for _, colorData in ipairs(colors) do
     end)
 end
 
+-- About Section
+local AboutLabel = Instance.new("TextLabel")
+AboutLabel.Size = UDim2.new(1, 0, 0, 30)
+AboutLabel.BackgroundTransparency = 1
+AboutLabel.Text = "About"
+AboutLabel.TextColor3 = THEME.SubText
+AboutLabel.Font = Enum.Font.GothamBold
+AboutLabel.TextSize = 14
+AboutLabel.TextXAlignment = Enum.TextXAlignment.Left
+AboutLabel.Parent = SettingsPage
+
+local AboutContainer = Instance.new("Frame")
+AboutContainer.Size = UDim2.new(1, 0, 0, 130) -- Increased height for more info
+AboutContainer.BackgroundColor3 = THEME.Item
+AboutContainer.Parent = SettingsPage
+
+local AboutCorner = Instance.new("UICorner")
+AboutCorner.CornerRadius = UDim.new(0, 8)
+AboutCorner.Parent = AboutContainer
+
+local AboutText = Instance.new("TextLabel")
+AboutText.Size = UDim2.new(1, -20, 1, -10)
+AboutText.Position = UDim2.new(0, 10, 0, 5)
+AboutText.BackgroundTransparency = 1
+AboutText.Text = "XuanHub Remastered\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
+AboutText.TextColor3 = THEME.Text
+AboutText.Font = Enum.Font.Gotham
+AboutText.TextSize = 12
+AboutText.TextWrapped = true
+AboutText.TextXAlignment = Enum.TextXAlignment.Left
+AboutText.TextYAlignment = Enum.TextYAlignment.Top
+AboutText.Parent = AboutContainer
+
 -- PAGE: Scripts
 local ScriptsPage = Instance.new("Frame")
 ScriptsPage.Size = UDim2.new(1, 0, 1, 0)
