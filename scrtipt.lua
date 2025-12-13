@@ -16,7 +16,7 @@ if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 pcall(function()
     local autoFiles = listfiles(AUTOEXEC_DIR)
     if #autoFiles == 0 then
-        writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')")
+        writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads')")
     end
     
     for _, file in pairs(listfiles(AUTOEXEC_DIR)) do
@@ -706,7 +706,7 @@ local AboutText = Instance.new("TextLabel")
 AboutText.Size = UDim2.new(1, -20, 1, -10)
 AboutText.Position = UDim2.new(0, 10, 0, 5)
 AboutText.BackgroundTransparency = 1
-AboutText.Text = "XuanHub Remastered\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
+AboutText.Text = "XuanHub Remastered\n\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
 AboutText.TextColor3 = THEME.Text
 AboutText.Font = Enum.Font.Gotham
 AboutText.TextSize = 13
@@ -928,3 +928,4 @@ tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end
 
 -- Init
 switchTab("AutoExec")
+
