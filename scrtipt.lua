@@ -5,7 +5,8 @@ if not writefile or not readfile then
     return
 end
 
-local FILE_PATH = "AutoExecute/autoexecute.txt"
+local AUTOEXEC_FOLDER = "AutoExecute"
+local FILE_PATH = AUTOEXEC_FOLDER .. "/autoexecute.txt"
 local UIS = game:GetService("UserInputService")
 local PANEL_GRADIENT_TOP = Color3.fromRGB(68, 14, 54)
 local PANEL_GRADIENT_BOTTOM = Color3.fromRGB(34, 6, 30)
@@ -17,6 +18,15 @@ local ICON_BUTTON_COLOR = Color3.fromRGB(94, 28, 80)
 local TEXT_PRIMARY = Color3.fromRGB(255, 236, 247)
 local TEXT_SECONDARY = Color3.fromRGB(234, 184, 214)
 local STROKE_COLOR = Color3.fromRGB(255, 182, 214)
+
+local function tryInstance(className)
+    local ok, instance = pcall(Instance.new, className)
+    if not ok then
+        warn("Unable to create instance of", className, ":", instance)
+        return nil
+    end
+    return instance
+end
 
 -- GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -35,7 +45,23 @@ ScreenGui.Name = "XuanHubAutoExecute"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = game.CoreGui
+
+if syn and syn.protect_gui then
+    pcall(syn.protect_gui, ScreenGui)
+end
+
+local parentGui = typeof(gethui) == "function" and gethui()
+if not parentGui then
+    local ok, coreGui = pcall(game.GetService, game, "CoreGui")
+    if ok then
+        parentGui = coreGui
+    else
+        local players = game:GetService("Players")
+        local localPlayer = players.LocalPlayer or players.PlayerAdded:Wait()
+        parentGui = localPlayer:WaitForChild("PlayerGui")
+    end
+end
+ScreenGui.Parent = parentGui
 
 Frame.Parent = ScreenGui
 Frame.Size = UDim2.new(0, 460, 0, 320)
@@ -43,35 +69,46 @@ Frame.Position = UDim2.new(0.5, -230, 0.5, -160)
 Frame.BackgroundColor3 = PANEL_GRADIENT_TOP
 Frame.BorderSizePixel = 0
 Frame.ClipsDescendants = false
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 14)
-frameCorner.Parent = Frame
-local frameStroke = Instance.new("UIStroke")
-frameStroke.Color = STROKE_COLOR
-frameStroke.Transparency = 0.55
-frameStroke.Thickness = 1.4
-frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-frameStroke.Parent = Frame
-local frameGradient = Instance.new("UIGradient")
-frameGradient.Color = ColorSequence.new(
-    ColorSequenceKeypoint.new(0, PANEL_GRADIENT_TOP),
-    ColorSequenceKeypoint.new(1, PANEL_GRADIENT_BOTTOM)
-)
-frameGradient.Rotation = 90
-frameGradient.Parent = Frame
-local frameGlow = Instance.new("ImageLabel")
-frameGlow.Name = "Glow"
-frameGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-frameGlow.Position = UDim2.new(0.5, 0, 0.5, 6)
-frameGlow.Size = UDim2.new(1, 52, 1, 52)
-frameGlow.BackgroundTransparency = 1
-frameGlow.Image = "rbxassetid://4996891970"
-frameGlow.ImageColor3 = BUTTON_PRIMARY
-frameGlow.ImageTransparency = 0.55
-frameGlow.ZIndex = 0
-frameGlow.Active = false
-frameGlow.ScaleType = Enum.ScaleType.Stretch
-frameGlow.Parent = Frame
+local frameCorner = tryInstance("UICorner")
+if frameCorner then
+    frameCorner.CornerRadius = UDim.new(0, 14)
+    frameCorner.Parent = Frame
+end
+
+local frameStroke = tryInstance("UIStroke")
+if frameStroke then
+    frameStroke.Color = STROKE_COLOR
+    frameStroke.Transparency = 0.55
+    frameStroke.Thickness = 1.4
+    frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    frameStroke.Parent = Frame
+end
+
+local frameGradient = tryInstance("UIGradient")
+if frameGradient then
+    frameGradient.Color = ColorSequence.new(
+        ColorSequenceKeypoint.new(0, PANEL_GRADIENT_TOP),
+        ColorSequenceKeypoint.new(1, PANEL_GRADIENT_BOTTOM)
+    )
+    frameGradient.Rotation = 90
+    frameGradient.Parent = Frame
+end
+
+local frameGlow = tryInstance("ImageLabel")
+if frameGlow then
+    frameGlow.Name = "Glow"
+    frameGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    frameGlow.Position = UDim2.new(0.5, 0, 0.5, 6)
+    frameGlow.Size = UDim2.new(1, 52, 1, 52)
+    frameGlow.BackgroundTransparency = 1
+    frameGlow.Image = "rbxassetid://4996891970"
+    frameGlow.ImageColor3 = BUTTON_PRIMARY
+    frameGlow.ImageTransparency = 0.55
+    frameGlow.ZIndex = 0
+    frameGlow.Active = false
+    frameGlow.ScaleType = Enum.ScaleType.Stretch
+    frameGlow.Parent = Frame
+end
 local expandedSize = Frame.Size
 local minimizedSize = UDim2.new(Frame.Size.X.Scale, Frame.Size.X.Offset, 0, 40)
 
@@ -111,14 +148,19 @@ Box.PlaceholderText = "-- Paste your script here"
 Box.PlaceholderColor3 = TEXT_SECONDARY
 Box.TextXAlignment = Enum.TextXAlignment.Left
 Box.TextStrokeTransparency = 0.9
-local boxCorner = Instance.new("UICorner")
-boxCorner.CornerRadius = UDim.new(0, 10)
-boxCorner.Parent = Box
-local boxStroke = Instance.new("UIStroke")
-boxStroke.Color = STROKE_COLOR
-boxStroke.Transparency = 0.75
-boxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-boxStroke.Parent = Box
+local boxCorner = tryInstance("UICorner")
+if boxCorner then
+    boxCorner.CornerRadius = UDim.new(0, 10)
+    boxCorner.Parent = Box
+end
+
+local boxStroke = tryInstance("UIStroke")
+if boxStroke then
+    boxStroke.Color = STROKE_COLOR
+    boxStroke.Transparency = 0.75
+    boxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    boxStroke.Parent = Box
+end
 
 -- BUTTONS
 Save.Parent = Frame
@@ -174,14 +216,19 @@ Status.TextXAlignment = Enum.TextXAlignment.Center
 Status.TextYAlignment = Enum.TextYAlignment.Center
 Status.Text = "✨ Ready"
 Status.ZIndex = 2
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 10)
-statusCorner.Parent = Status
-local statusStroke = Instance.new("UIStroke")
-statusStroke.Color = STROKE_COLOR
-statusStroke.Transparency = 0.75
-statusStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-statusStroke.Parent = Status
+local statusCorner = tryInstance("UICorner")
+if statusCorner then
+    statusCorner.CornerRadius = UDim.new(0, 10)
+    statusCorner.Parent = Status
+end
+
+local statusStroke = tryInstance("UIStroke")
+if statusStroke then
+    statusStroke.Color = STROKE_COLOR
+    statusStroke.Transparency = 0.75
+    statusStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    statusStroke.Parent = Status
+end
 
 Minimize.Parent = Frame
 Minimize.Size = UDim2.new(0, 28, 0, 24)
@@ -209,6 +256,34 @@ Maximize.ZIndex = 3
 -- LOGIC
 local minimized = false
 local bodyElements = {Box, Save, Load, Clear, Delete, Status}
+local folderReady = false
+
+local function ensureAutoExecFolder()
+    if folderReady then
+        return true
+    end
+
+    local ok, err = pcall(function()
+        if isfolder and not isfolder(AUTOEXEC_FOLDER) then
+            if makefolder then
+                makefolder(AUTOEXEC_FOLDER)
+            end
+        end
+    end)
+
+    if ok then
+        folderReady = (not isfolder) or isfolder(AUTOEXEC_FOLDER)
+        if not folderReady then
+            Status.Text = "❗ Folder blocked"
+            return false
+        end
+        return true
+    else
+        warn("Failed to prepare auto-execute folder:", err)
+        Status.Text = "❗ Folder error"
+        return false
+    end
+end
 
 local function stylizeButton(button, baseColor, textSize, cornerRadius, font)
     local hovered = false
@@ -222,16 +297,20 @@ local function stylizeButton(button, baseColor, textSize, cornerRadius, font)
     button.TextSize = textSize or button.TextSize
     button.ZIndex = math.max(button.ZIndex, 2)
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, cornerRadius or 10)
-    corner.Parent = button
+    local corner = tryInstance("UICorner")
+    if corner then
+        corner.CornerRadius = UDim.new(0, cornerRadius or 10)
+        corner.Parent = button
+    end
 
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = STROKE_COLOR
-    stroke.Transparency = 0.6
-    stroke.Thickness = 1
-    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    stroke.Parent = button
+    local stroke = tryInstance("UIStroke")
+    if stroke then
+        stroke.Color = STROKE_COLOR
+        stroke.Transparency = 0.6
+        stroke.Thickness = 1
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Parent = button
+    end
 
     button.MouseEnter:Connect(function()
         hovered = true
@@ -294,14 +373,32 @@ Save.MouseButton1Click:Connect(function()
         Status.Text = "⚠️ Empty"
         return
     end
-    writefile(FILE_PATH, Box.Text)
-    Status.Text = "✅ Saved"
+    if not ensureAutoExecFolder() then
+        return
+    end
+    local ok, err = pcall(function()
+        writefile(FILE_PATH, Box.Text)
+    end)
+    if ok then
+        Status.Text = "✅ Saved"
+    else
+        warn("Failed to save auto-exec:", err)
+        Status.Text = "❌ Save failed"
+    end
 end)
 
 Load.MouseButton1Click:Connect(function()
     if isfile(FILE_PATH) then
-        Box.Text = readfile(FILE_PATH)
-        Status.Text = "📜 Loaded"
+        local ok, result = pcall(function()
+            return readfile(FILE_PATH)
+        end)
+        if ok then
+            Box.Text = result
+            Status.Text = "📜 Loaded"
+        else
+            warn("Failed to load auto-exec:", result)
+            Status.Text = "❌ Load failed"
+        end
     else
         Status.Text = "❌ No file"
     end
@@ -314,8 +411,15 @@ end)
 
 Delete.MouseButton1Click:Connect(function()
     if isfile(FILE_PATH) then
-        delfile(FILE_PATH)
-        Status.Text = "🗑 Deleted"
+        local ok, err = pcall(function()
+            delfile(FILE_PATH)
+        end)
+        if ok then
+            Status.Text = "🗑 Deleted"
+        else
+            warn("Failed to delete auto-exec:", err)
+            Status.Text = "❌ Delete failed"
+        end
     else
         Status.Text = "❌ No file"
     end
