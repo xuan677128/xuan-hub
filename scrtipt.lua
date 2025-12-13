@@ -87,20 +87,33 @@ Title.Parent = Header
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "-"
 CloseBtn.Size = UDim2.new(0, 45, 1, 0)
-CloseBtn.Position = UDim2.new(1, -45, 0, 0)
+CloseBtn.Position = UDim2.new(1, -90, 0, 0) -- Moved left
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.TextColor3 = THEME.SubText
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 24
 CloseBtn.Parent = Header
 
+local ExitBtn = Instance.new("TextButton")
+ExitBtn.Text = "X"
+ExitBtn.Size = UDim2.new(0, 45, 1, 0)
+ExitBtn.Position = UDim2.new(1, -45, 0, 0)
+ExitBtn.BackgroundTransparency = 1
+ExitBtn.TextColor3 = THEME.Red
+ExitBtn.Font = Enum.Font.GothamBold
+ExitBtn.TextSize = 20
+ExitBtn.Parent = Header
+
 -- Sidebar
-local Sidebar = Instance.new("Frame")
+local Sidebar = Instance.new("ScrollingFrame") -- Scrollable
 Sidebar.Name = "Sidebar"
 Sidebar.Size = UDim2.new(0, 160, 1, -45)
 Sidebar.Position = UDim2.new(0, 0, 0, 45)
 Sidebar.BackgroundColor3 = THEME.Sidebar
 Sidebar.BorderSizePixel = 0
+Sidebar.ScrollBarThickness = 2
+Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
 Sidebar.Parent = MainFrame
 
 local SidebarCorner = Instance.new("UICorner")
@@ -189,10 +202,14 @@ end
 makeDraggable(Header, MainFrame)
 makeDraggable(FloatingBtn, FloatingBtn)
 
--- Minimize/Maximize
+-- Minimize/Maximize/Close
 CloseBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
     FloatingBtn.Visible = true
+end)
+
+ExitBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
 
 FloatingBtn.MouseButton1Click:Connect(function()
