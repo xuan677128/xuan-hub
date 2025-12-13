@@ -340,8 +340,19 @@ AutoSaveCorner.CornerRadius = UDim.new(0, 8)
 AutoSaveCorner.Parent = AutoSave
 
 AutoSave.MouseButton1Click:Connect(function()
-    writefile(AUTOEXEC_FILE, AutoBox.Text)
-    AutoSave.Text = "Saved!"
+    -- Use pcall to safely attempt writing (creates file if missing)
+    local success, err = pcall(function()
+        writefile(AUTOEXEC_FILE, AutoBox.Text)
+    end)
+
+    if success then
+        AutoSave.Text = "Saved!"
+        notify("File Created/Saved!", THEME.Green)
+    else
+        AutoSave.Text = "Error"
+        notify("Save Failed!", THEME.Red)
+    end
+    
     wait(1)
     AutoSave.Text = "Save AutoExec"
 end)
