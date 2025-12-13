@@ -14,7 +14,7 @@ if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 
 if not isfile(AUTOEXEC_FILE) then 
-    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')") 
+    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads it will automatically run the script") 
 end
 
 -- Internal Auto Execution
@@ -658,3 +658,4 @@ tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings
 
 -- Init
 switchTab("AutoExec")
+
