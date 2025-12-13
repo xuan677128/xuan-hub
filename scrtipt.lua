@@ -19,6 +19,22 @@ local TEXT_PRIMARY = Color3.fromRGB(255, 236, 247)
 local TEXT_SECONDARY = Color3.fromRGB(234, 184, 214)
 local STROKE_COLOR = Color3.fromRGB(255, 182, 214)
 
+local function safeFont(enumName, fallback)
+    local ok, font = pcall(function()
+        return Enum.Font[enumName]
+    end)
+    if ok and font then
+        return font
+    end
+    return fallback
+end
+
+local FONT_TITLE = safeFont("GothamBold", Enum.Font.SourceSansBold)
+local FONT_BUTTON = safeFont("GothamSemibold", Enum.Font.SourceSansBold)
+local FONT_ICON = safeFont("GothamBold", Enum.Font.SourceSansBold)
+local FONT_STATUS = safeFont("GothamSemibold", Enum.Font.SourceSansBold)
+local FONT_TEXTBOX = safeFont("Code", Enum.Font.SourceSans)
+
 local function tryInstance(className)
     local ok, instance = pcall(Instance.new, className)
     if not ok then
@@ -128,7 +144,7 @@ setSafe(TitleBar, "Text", "🌸 Xuan Hub — AutoExecute Manager")
 setSafe(TitleBar, "TextColor3", TEXT_PRIMARY)
 setSafe(TitleBar, "BackgroundColor3", Color3.fromRGB(96, 24, 82))
 setSafe(TitleBar, "BackgroundTransparency", 0.1)
-setSafe(TitleBar, "Font", Enum.Font.GothamBold)
+setSafe(TitleBar, "Font", FONT_TITLE)
 setSafe(TitleBar, "TextSize", 18)
 setSafe(TitleBar, "BorderSizePixel", 0)
 setSafe(TitleBar, "TextXAlignment", Enum.TextXAlignment.Left)
@@ -149,7 +165,7 @@ Box.MultiLine = true
 Box.ClearTextOnFocus = false
 Box.TextWrapped = true
 Box.TextYAlignment = Enum.TextYAlignment.Top
-Box.Font = Enum.Font.Code
+Box.Font = FONT_TEXTBOX
 setSafe(Box, "TextSize", 15)
 setSafe(Box, "LineHeight", 1.25)
 setSafe(Box, "Text", "")
@@ -180,7 +196,7 @@ Save.Size = UDim2.new(0.5, -26, 0, 36)
 setSafe(Save, "Text", "💾 Save")
 setSafe(Save, "BackgroundColor3", BUTTON_PRIMARY)
 setSafe(Save, "TextColor3", TEXT_PRIMARY)
-setSafe(Save, "Font", Enum.Font.GothamSemibold)
+setSafe(Save, "Font", FONT_BUTTON)
 setSafe(Save, "TextSize", 14)
 Save.AutoButtonColor = false
 
@@ -190,7 +206,7 @@ Load.Size = UDim2.new(0.5, -26, 0, 36)
 setSafe(Load, "Text", "📂 Load Script")
 setSafe(Load, "BackgroundColor3", BUTTON_SECONDARY)
 setSafe(Load, "TextColor3", TEXT_PRIMARY)
-setSafe(Load, "Font", Enum.Font.GothamSemibold)
+setSafe(Load, "Font", FONT_BUTTON)
 setSafe(Load, "TextSize", 14)
 Load.AutoButtonColor = false
 
@@ -200,7 +216,7 @@ Clear.Size = UDim2.new(0.3, -6, 0, 32)
 setSafe(Clear, "Text", "🧹 Clear")
 setSafe(Clear, "BackgroundColor3", BUTTON_NEUTRAL)
 setSafe(Clear, "TextColor3", TEXT_PRIMARY)
-setSafe(Clear, "Font", Enum.Font.GothamSemibold)
+setSafe(Clear, "Font", FONT_BUTTON)
 setSafe(Clear, "TextSize", 13)
 Clear.AutoButtonColor = false
 
@@ -210,7 +226,7 @@ Delete.Size = UDim2.new(0.3, -6, 0, 32)
 setSafe(Delete, "Text", "🗑 Delete")
 setSafe(Delete, "BackgroundColor3", BUTTON_DANGER)
 setSafe(Delete, "TextColor3", TEXT_PRIMARY)
-setSafe(Delete, "Font", Enum.Font.GothamSemibold)
+setSafe(Delete, "Font", FONT_BUTTON)
 setSafe(Delete, "TextSize", 13)
 Delete.AutoButtonColor = false
 
@@ -220,7 +236,7 @@ Status.Size = UDim2.new(0.34, -20, 0, 32)
 setSafe(Status, "BackgroundColor3", Color3.fromRGB(62, 16, 52))
 setSafe(Status, "BackgroundTransparency", 0.25)
 setSafe(Status, "BorderSizePixel", 0)
-setSafe(Status, "Font", Enum.Font.GothamSemibold)
+setSafe(Status, "Font", FONT_STATUS)
 setSafe(Status, "TextSize", 13)
 setSafe(Status, "TextColor3", TEXT_SECONDARY)
 setSafe(Status, "TextXAlignment", Enum.TextXAlignment.Center)
@@ -246,7 +262,7 @@ Minimize.Size = UDim2.new(0, 28, 0, 24)
 Minimize.Position = UDim2.new(1, -80, 0, 8)
 setSafe(Minimize, "BackgroundColor3", ICON_BUTTON_COLOR)
 setSafe(Minimize, "TextColor3", TEXT_PRIMARY)
-setSafe(Minimize, "Font", Enum.Font.GothamBold)
+setSafe(Minimize, "Font", FONT_ICON)
 setSafe(Minimize, "TextSize", 16)
 setSafe(Minimize, "Text", "—")
 Minimize.AutoButtonColor = false
@@ -257,7 +273,7 @@ Maximize.Size = UDim2.new(0, 28, 0, 24)
 Maximize.Position = UDim2.new(1, -44, 0, 8)
 setSafe(Maximize, "BackgroundColor3", ICON_BUTTON_COLOR)
 setSafe(Maximize, "TextColor3", TEXT_PRIMARY)
-setSafe(Maximize, "Font", Enum.Font.GothamBold)
+setSafe(Maximize, "Font", FONT_ICON)
 setSafe(Maximize, "TextSize", 16)
 setSafe(Maximize, "Text", "⬜")
 Maximize.Visible = false
@@ -304,7 +320,7 @@ local function stylizeButton(button, baseColor, textSize, cornerRadius, font)
     button.AutoButtonColor = false
     button.BackgroundColor3 = baseColor
     button.TextColor3 = TEXT_PRIMARY
-    button.Font = font or Enum.Font.GothamSemibold
+    button.Font = font or FONT_BUTTON
     button.TextSize = textSize or button.TextSize
     button.ZIndex = math.max(button.ZIndex, 2)
 
@@ -323,35 +339,41 @@ local function stylizeButton(button, baseColor, textSize, cornerRadius, font)
         stroke.Parent = button
     end
 
-    button.MouseEnter:Connect(function()
-        hovered = true
-        button.BackgroundColor3 = hoverColor
-    end)
+        if button.MouseEnter and button.MouseLeave then
+            button.MouseEnter:Connect(function()
+                hovered = true
+                button.BackgroundColor3 = hoverColor
+            end)
 
-    button.MouseLeave:Connect(function()
-        hovered = false
-        button.BackgroundColor3 = baseColor
-    end)
-
-    button.MouseButton1Down:Connect(function()
-        button.BackgroundColor3 = pressedColor
-    end)
-
-    button.MouseButton1Up:Connect(function()
-        if hovered then
-            button.BackgroundColor3 = hoverColor
-        else
-            button.BackgroundColor3 = baseColor
+            button.MouseLeave:Connect(function()
+                hovered = false
+                button.BackgroundColor3 = baseColor
+            end)
         end
-    end)
+
+        if button.MouseButton1Down then
+            button.MouseButton1Down:Connect(function()
+                button.BackgroundColor3 = pressedColor
+            end)
+        end
+
+        if button.MouseButton1Up then
+            button.MouseButton1Up:Connect(function()
+                if hovered then
+                    button.BackgroundColor3 = hoverColor
+                else
+                    button.BackgroundColor3 = baseColor
+                end
+            end)
+        end
 end
 
 stylizeButton(Save, BUTTON_PRIMARY, 14)
 stylizeButton(Load, BUTTON_SECONDARY, 14)
 stylizeButton(Clear, BUTTON_NEUTRAL, 13)
 stylizeButton(Delete, BUTTON_DANGER, 13)
-stylizeButton(Minimize, ICON_BUTTON_COLOR, 16, 8, Enum.Font.GothamBold)
-stylizeButton(Maximize, ICON_BUTTON_COLOR, 16, 8, Enum.Font.GothamBold)
+stylizeButton(Minimize, ICON_BUTTON_COLOR, 16, 8, FONT_ICON)
+stylizeButton(Maximize, ICON_BUTTON_COLOR, 16, 8, FONT_ICON)
 
 -- Collapse or restore the UI body while keeping the title bar draggable
 local function setMinimized(state)
