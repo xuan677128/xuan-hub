@@ -33,12 +33,13 @@ ScreenGui.Name = "XuanHubUI"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 10000 -- Ensure it's on top
 
 -- Main Window
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 650, 0, 420) -- Slightly larger
-MainFrame.Position = UDim2.new(0.5, -325, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 500, 0, 330) -- Smaller Size
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -165)
 MainFrame.BackgroundColor3 = THEME.Background
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -58,6 +59,7 @@ Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 45)
 Header.BackgroundColor3 = THEME.Sidebar
 Header.BorderSizePixel = 0
+Header.Active = true -- Important for Delta
 Header.Parent = MainFrame
 
 local HeaderCorner = Instance.new("UICorner")
@@ -132,6 +134,7 @@ FloatingBtn.TextColor3 = THEME.Accent
 FloatingBtn.Font = Enum.Font.GothamBold
 FloatingBtn.TextSize = 20
 FloatingBtn.Visible = false
+FloatingBtn.Active = true -- Important for Delta
 FloatingBtn.Parent = ScreenGui
 
 local FloatCorner = Instance.new("UICorner")
@@ -143,36 +146,47 @@ FloatStroke.Color = THEME.Accent
 FloatStroke.Thickness = 2
 FloatStroke.Parent = FloatingBtn
 
--- Dragging Logic (Robust)
-local function makeDraggable(obj, dragHandle)
-    local dragging, dragInput, dragStart, startPos
-    
-    dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = obj.Position
-        end
-    end)
-    
-    dragHandle.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            obj.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
+-- Dragging Logic (Robust for Delta)
+local function makeDraggable(topbarobject, object)
+	local Dragging = nil
+	local DragInput = nil
+	local DragStart = nil
+	local StartPosition = nil
+
+	local function Update(input)
+		local Delta = input.Position - DragStart
+		local pos = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + Delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y)
+		object.Position = pos
+	end
+
+	topbarobject.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			Dragging = true
+			DragStart = input.Position
+			StartPosition = object.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					Dragging = false
+				end
+			end)
+		end
+	end)
+
+	topbarobject.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			DragInput = input
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if input == DragInput and Dragging then
+			Update(input)
+		end
+	end)
 end
 
-makeDraggable(MainFrame, Header)
+makeDraggable(Header, MainFrame)
 makeDraggable(FloatingBtn, FloatingBtn)
 
 -- Minimize/Maximize
