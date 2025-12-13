@@ -38,8 +38,8 @@ ScreenGui.DisplayOrder = 10000 -- Ensure it's on top
 -- Main Window
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 500, 0, 330) -- Smaller Size
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -165)
+MainFrame.Size = UDim2.new(0, 600, 0, 350) -- Wider
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -175)
 MainFrame.BackgroundColor3 = THEME.Background
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -107,7 +107,7 @@ ExitBtn.Parent = Header
 -- Sidebar
 local Sidebar = Instance.new("ScrollingFrame") -- Scrollable
 Sidebar.Name = "Sidebar"
-Sidebar.Size = UDim2.new(0, 160, 1, -45)
+Sidebar.Size = UDim2.new(0, 130, 1, -45) -- Narrower
 Sidebar.Position = UDim2.new(0, 0, 0, 45)
 Sidebar.BackgroundColor3 = THEME.Sidebar
 Sidebar.BorderSizePixel = 0
@@ -130,8 +130,8 @@ SidebarCover.Parent = Sidebar
 -- Content Area
 local Content = Instance.new("Frame")
 Content.Name = "Content"
-Content.Size = UDim2.new(1, -170, 1, -55)
-Content.Position = UDim2.new(0, 165, 0, 50)
+Content.Size = UDim2.new(1, -140, 1, -55) -- Adjusted
+Content.Position = UDim2.new(0, 135, 0, 50) -- Adjusted
 Content.BackgroundColor3 = THEME.Background
 Content.BackgroundTransparency = 1
 Content.Parent = MainFrame
@@ -312,7 +312,7 @@ ScriptsPage.Parent = Content
 
 -- Script List (Left Side of Content)
 local ListContainer = Instance.new("Frame")
-ListContainer.Size = UDim2.new(0, 180, 1, 0)
+ListContainer.Size = UDim2.new(0, 140, 1, 0) -- Narrower
 ListContainer.BackgroundColor3 = THEME.Item
 ListContainer.Parent = ScriptsPage
 
@@ -325,6 +325,8 @@ ScriptList.Size = UDim2.new(1, -10, 1, -10)
 ScriptList.Position = UDim2.new(0, 5, 0, 5)
 ScriptList.BackgroundTransparency = 1
 ScriptList.ScrollBarThickness = 2
+ScriptList.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Auto Scroll
+ScriptList.CanvasSize = UDim2.new(0, 0, 0, 0)
 ScriptList.Parent = ListContainer
 
 local ListLayout = Instance.new("UIListLayout")
@@ -333,13 +335,29 @@ ListLayout.Parent = ScriptList
 
 -- Editor Area (Right Side of Content)
 local EditorContainer = Instance.new("Frame")
-EditorContainer.Size = UDim2.new(1, -190, 1, 0)
-EditorContainer.Position = UDim2.new(0, 190, 0, 0)
+EditorContainer.Size = UDim2.new(1, -150, 1, 0) -- Adjusted
+EditorContainer.Position = UDim2.new(0, 150, 0, 0) -- Adjusted
 EditorContainer.BackgroundTransparency = 1
 EditorContainer.Parent = ScriptsPage
 
+local FileNameBox = Instance.new("TextBox")
+FileNameBox.Size = UDim2.new(1, 0, 0, 30)
+FileNameBox.Position = UDim2.new(0, 0, 0, 0)
+FileNameBox.BackgroundColor3 = THEME.Item
+FileNameBox.TextColor3 = THEME.Accent
+FileNameBox.Font = Enum.Font.GothamBold
+FileNameBox.TextSize = 14
+FileNameBox.Text = "Script Name"
+FileNameBox.ClearTextOnFocus = false
+FileNameBox.Parent = EditorContainer
+
+local FileCorner = Instance.new("UICorner")
+FileCorner.CornerRadius = UDim.new(0, 6)
+FileCorner.Parent = FileNameBox
+
 local ScriptEditor = Instance.new("TextBox")
-ScriptEditor.Size = UDim2.new(1, 0, 1, -45)
+ScriptEditor.Size = UDim2.new(1, 0, 1, -80) -- Adjusted
+ScriptEditor.Position = UDim2.new(0, 0, 0, 35)
 ScriptEditor.BackgroundColor3 = THEME.Item
 ScriptEditor.TextColor3 = THEME.Text
 ScriptEditor.Font = Enum.Font.Code
@@ -357,8 +375,8 @@ EditorCorner.Parent = ScriptEditor
 
 -- Controls (Bottom of Editor)
 local Controls = Instance.new("Frame")
-Controls.Size = UDim2.new(1, 0, 0, 35)
-Controls.Position = UDim2.new(0, 0, 1, -35)
+Controls.Size = UDim2.new(1, 0, 0, 40) -- Slightly taller
+Controls.Position = UDim2.new(0, 0, 1, -40)
 Controls.BackgroundTransparency = 1
 Controls.Parent = EditorContainer
 
@@ -371,8 +389,8 @@ local function createControlBtn(text, color, posScale, callback)
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 12
-    btn.Size = UDim2.new(0.23, 0, 1, 0)
-    btn.Position = UDim2.new(posScale, 0, 0, 0)
+    btn.Size = UDim2.new(0.19, 0, 0, 30) -- Smaller width for 5 buttons
+    btn.Position = UDim2.new(posScale, 0, 0.5, -15)
     btn.Parent = Controls
     
     local c = Instance.new("UICorner")
@@ -383,33 +401,49 @@ local function createControlBtn(text, color, posScale, callback)
     return btn
 end
 
--- Buttons: Run, Save, New, Delete
-createControlBtn("▶ Run", THEME.Green, 0, function()
+-- Buttons: Run, Save, Rename, New, Delete
+createControlBtn("▶", THEME.Green, 0, function()
     if ScriptEditor.Text ~= "" then
         loadstring(ScriptEditor.Text)()
     end
 end)
 
-createControlBtn("💾 Save", THEME.Accent, 0.25, function()
+createControlBtn("💾", THEME.Accent, 0.20, function()
     if CurrentScriptFile then
         writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
     end
 end)
 
-createControlBtn("📄 New", THEME.Sidebar, 0.50, function()
+createControlBtn("✏️", THEME.Sidebar, 0.40, function()
+    if CurrentScriptFile and FileNameBox.Text ~= "" then
+        local newName = FileNameBox.Text
+        if not newName:match("%.lua$") then newName = newName .. ".lua" end
+        
+        if newName ~= CurrentScriptFile then
+            writefile(SCRIPTS_DIR .. "/" .. newName, ScriptEditor.Text)
+            delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
+            CurrentScriptFile = newName
+            refreshScripts()
+        end
+    end
+end)
+
+createControlBtn("📄", THEME.Sidebar, 0.60, function()
     CurrentScriptFile = nil
     ScriptEditor.Text = ""
     local name = "Script_" .. math.random(1000) .. ".lua"
     CurrentScriptFile = name
+    FileNameBox.Text = name
     writefile(SCRIPTS_DIR .. "/" .. name, "")
     refreshScripts()
 end)
 
-createControlBtn("🗑 Delete", THEME.Red, 0.75, function()
+createControlBtn("🗑", THEME.Red, 0.80, function()
     if CurrentScriptFile then
         delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
         CurrentScriptFile = nil
         ScriptEditor.Text = ""
+        FileNameBox.Text = "Script Name"
         refreshScripts()
     end
 end)
@@ -437,6 +471,7 @@ function refreshScripts()
         
         btn.MouseButton1Click:Connect(function()
             CurrentScriptFile = name
+            FileNameBox.Text = name
             ScriptEditor.Text = readfile(file)
             -- Highlight selection
             for _, b in pairs(ScriptList:GetChildren()) do
