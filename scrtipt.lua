@@ -96,6 +96,7 @@ TitleBar.Font = Enum.Font.GothamBold
 TitleBar.TextSize = 16
 TitleBar.TextXAlignment = Enum.TextXAlignment.Left
 TitleBar.ZIndex = 3
+TitleBar.Active = false
 
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 16)
@@ -575,21 +576,40 @@ end)
 
 AutoExecSaveBtn.MouseButton1Click:Connect(function()
     if AutoExecBox.Text == "" then
-        Status.Text = "⚠️ Empty"
+        Status.Text = "⚠️ Empty script"
         return
     end
-    pcall(function()
+    
+    local success, err = pcall(function()
         writefile(AUTOEXEC_FILE, AutoExecBox.Text)
     end)
-    Status.Text = "✅ AutoExec saved"
+    
+    if success then
+        Status.Text = "✅ AutoExec saved!"
+    else
+        Status.Text = "❌ Save failed"
+        warn("Save error:", err)
+    end
 end)
 
 AutoExecLoadBtn.MouseButton1Click:Connect(function()
-    if isfile(AUTOEXEC_FILE) then
-        AutoExecBox.Text = readfile(AUTOEXEC_FILE)
-        Status.Text = "📜 AutoExec loaded"
-    else
+    local success, result = pcall(function()
+        if isfile(AUTOEXEC_FILE) then
+            local content = readfile(AUTOEXEC_FILE)
+            AutoExecBox.Text = content
+            return true
+        else
+            return false
+        end
+    end)
+    
+    if success and result then
+        Status.Text = "📜 AutoExec loaded!"
+    elseif success and not result then
         Status.Text = "❌ No AutoExec file"
+    else
+        Status.Text = "❌ Load failed"
+        warn("Load error:", result)
     end
 end)
 
@@ -665,6 +685,45 @@ FloatingBtn.MouseLeave:Connect(function()
     FloatingBtn.Size = UDim2.new(0, 70, 0, 70)
 end)
 
+-- FLOATING BUTTON DRAGGING
+local floatDragging = false
+local floatDragStart, floatStartPos
+
+FloatingBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        floatDragging = true
+        floatDragStart = input.Position
+        floatStartPos = FloatingBtn.Position
+    end
+end)
+
+FloatingBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if floatDragging then
+            local delta = input.Position - floatDragStart
+            if delta.Magnitude < 5 then
+                -- It was a click, not a drag
+                if minimized then
+                    toggleMinimize()
+                end
+            end
+            floatDragging = false
+        end
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if floatDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - floatDragStart
+        FloatingBtn.Position = UDim2.new(
+            floatStartPos.X.Scale,
+            floatStartPos.X.Offset + delta.X,
+            floatStartPos.Y.Scale,
+            floatStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
 local minimized = false
 
 local function toggleMinimize()
@@ -682,12 +741,6 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     toggleMinimize()
 end)
 
-FloatingBtn.MouseButton1Click:Connect(function()
-    if minimized then
-        toggleMinimize()
-    end
-end)
-
 ScreenGui.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         if contextMenu and not contextMenu:IsAncestorOf(game:GetService("Players").LocalPlayer:GetMouse().Target) then
@@ -697,11 +750,11 @@ ScreenGui.InputBegan:Connect(function(input)
     end
 end)
 
--- DRAGGING (Title Bar)
+-- DRAGGING (Main Frame)
 local dragging = false
 local dragStart, startPos
 
-TitleBar.InputBegan:Connect(function(input)
+MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
@@ -709,7 +762,7 @@ TitleBar.InputBegan:Connect(function(input)
     end
 end)
 
-TitleBar.InputEnded:Connect(function(input)
+MainFrame.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
