@@ -68,7 +68,6 @@ MainFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
 MainFrame.BackgroundColor3 = CARD_BG
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = false
-MainFrame.Active = true
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 16)
@@ -163,6 +162,7 @@ ScriptsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
 ScriptsTab.Font = Enum.Font.GothamBold
 ScriptsTab.TextSize = 13
 ScriptsTab.AutoButtonColor = false
+ScriptsTab.ZIndex = 2
 
 local scriptsCorner = Instance.new("UICorner")
 scriptsCorner.CornerRadius = UDim.new(0, 12)
@@ -178,6 +178,7 @@ AutoExecTab.TextColor3 = TEXT_COLOR
 AutoExecTab.Font = Enum.Font.GothamBold
 AutoExecTab.TextSize = 13
 AutoExecTab.AutoButtonColor = false
+AutoExecTab.ZIndex = 2
 
 local autoCorner = Instance.new("UICorner")
 autoCorner.CornerRadius = UDim.new(0, 12)
@@ -214,6 +215,7 @@ AddNewBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AddNewBtn.Font = Enum.Font.GothamBold
 AddNewBtn.TextSize = 14
 AddNewBtn.AutoButtonColor = false
+AddNewBtn.ZIndex = 2
 
 local addCorner = Instance.new("UICorner")
 addCorner.CornerRadius = UDim.new(0, 12)
@@ -249,6 +251,7 @@ AutoExecBox.TextXAlignment = Enum.TextXAlignment.Left
 AutoExecBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoExecBox.Font = Enum.Font.Code
 AutoExecBox.TextSize = 13
+AutoExecBox.ZIndex = 2
 
 local boxCorner = Instance.new("UICorner")
 boxCorner.CornerRadius = UDim.new(0, 12)
@@ -271,6 +274,7 @@ AutoExecSaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecSaveBtn.Font = Enum.Font.GothamBold
 AutoExecSaveBtn.TextSize = 13
 AutoExecSaveBtn.AutoButtonColor = false
+AutoExecSaveBtn.ZIndex = 2
 
 local saveCorner = Instance.new("UICorner")
 saveCorner.CornerRadius = UDim.new(0, 10)
@@ -286,6 +290,7 @@ AutoExecLoadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecLoadBtn.Font = Enum.Font.GothamBold
 AutoExecLoadBtn.TextSize = 13
 AutoExecLoadBtn.AutoButtonColor = false
+AutoExecLoadBtn.ZIndex = 2
 
 local loadCorner = Instance.new("UICorner")
 loadCorner.CornerRadius = UDim.new(0, 10)
@@ -301,6 +306,7 @@ AutoExecExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoExecExecBtn.Font = Enum.Font.GothamBold
 AutoExecExecBtn.TextSize = 13
 AutoExecExecBtn.AutoButtonColor = false
+AutoExecExecBtn.ZIndex = 2
 
 local execCorner = Instance.new("UICorner")
 execCorner.CornerRadius = UDim.new(0, 10)
@@ -691,11 +697,11 @@ ScreenGui.InputBegan:Connect(function(input)
     end
 end)
 
--- DRAGGING (Entire Frame)
+-- DRAGGING (Title Bar)
 local dragging = false
 local dragStart, startPos
 
-MainFrame.InputBegan:Connect(function(input)
+TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
@@ -703,7 +709,7 @@ MainFrame.InputBegan:Connect(function(input)
     end
 end)
 
-MainFrame.InputEnded:Connect(function(input)
+TitleBar.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
