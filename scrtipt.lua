@@ -1,472 +1,353 @@
--- Xuan Hub AutoExecute Manager (Draggable)
+-- Xuan Hub AutoExecute Manager with Script Library
 
 if not writefile or not readfile then
     warn("Executor does not support file functions")
     return
 end
 
-local AUTOEXEC_FOLDER = "AutoExecute"
-local FILE_PATH = AUTOEXEC_FOLDER .. "/autoexecute.txt"
+local SCRIPTS_FOLDER = "XuanHub/Scripts"
 local UIS = game:GetService("UserInputService")
-local PANEL_GRADIENT_TOP = Color3.fromRGB(68, 14, 54)
-local PANEL_GRADIENT_BOTTOM = Color3.fromRGB(34, 6, 30)
-local BUTTON_PRIMARY = Color3.fromRGB(252, 104, 170)
-local BUTTON_SECONDARY = Color3.fromRGB(210, 72, 140)
-local BUTTON_NEUTRAL = Color3.fromRGB(146, 52, 108)
-local BUTTON_DANGER = Color3.fromRGB(208, 38, 106)
-local ICON_BUTTON_COLOR = Color3.fromRGB(94, 28, 80)
-local TEXT_PRIMARY = Color3.fromRGB(255, 236, 247)
-local TEXT_SECONDARY = Color3.fromRGB(234, 184, 214)
-local STROKE_COLOR = Color3.fromRGB(255, 182, 214)
 
-local function safeFont(enumName, fallback)
-    local ok, font = pcall(function()
-        return Enum.Font[enumName]
-    end)
-    if ok and font then
-        return font
-    end
-    return fallback
-end
+-- Ensure folder exists
+pcall(function()
+    if not isfolder("XuanHub") then makefolder("XuanHub") end
+    if not isfolder(SCRIPTS_FOLDER) then makefolder(SCRIPTS_FOLDER) end
+end)
 
-local FONT_TITLE = safeFont("GothamBold", Enum.Font.SourceSansBold)
-local FONT_BUTTON = safeFont("GothamSemibold", Enum.Font.SourceSansBold)
-local FONT_ICON = safeFont("GothamBold", Enum.Font.SourceSansBold)
-local FONT_STATUS = safeFont("GothamSemibold", Enum.Font.SourceSansBold)
-local FONT_TEXTBOX = safeFont("Code", Enum.Font.SourceSans)
-
-local function tryInstance(className)
-    local ok, instance = pcall(Instance.new, className)
-    if not ok then
-        warn("Unable to create instance of", className, ":", instance)
-        return nil
-    end
-    return instance
-end
-
-local function setSafe(object, property, value)
-    local ok, err = pcall(function()
-        object[property] = value
-    end)
-    if not ok then
-        warn("Failed to set", property, "on", object.ClassName, ":", err)
-    end
-end
+-- Pink color scheme
+local PANEL_BG = Color3.fromRGB(34, 6, 30)
+local PANEL_TOP = Color3.fromRGB(68, 14, 54)
+local PINK_PRIMARY = Color3.fromRGB(252, 104, 170)
+local PINK_SECONDARY = Color3.fromRGB(210, 72, 140)
+local PINK_DARK = Color3.fromRGB(146, 52, 108)
+local TEXT_COLOR = Color3.fromRGB(255, 236, 247)
+local TEXT_DIM = Color3.fromRGB(234, 184, 214)
 
 -- GUI
 local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
+local MainFrame = Instance.new("Frame")
 local TitleBar = Instance.new("TextLabel")
-local Box = Instance.new("TextBox")
-local Save = Instance.new("TextButton")
-local Clear = Instance.new("TextButton")
-local Delete = Instance.new("TextButton")
-local Load = Instance.new("TextButton")
+local CloseBtn = Instance.new("TextButton")
+local MinimizeBtn = Instance.new("TextButton")
+
+-- Left Panel (Script List)
+local LeftPanel = Instance.new("Frame")
+local LeftTitle = Instance.new("TextLabel")
+local ScriptsList = Instance.new("ScrollingFrame")
+local AddNewBtn = Instance.new("TextButton")
+
+-- Right Panel (Editor)
+local RightPanel = Instance.new("Frame")
+local RightTitle = Instance.new("TextLabel")
+local EditorBox = Instance.new("TextBox")
+local SaveBtn = Instance.new("TextButton")
+local ExecuteBtn = Instance.new("TextButton")
+local DeleteBtn = Instance.new("TextButton")
 local Status = Instance.new("TextLabel")
-local Minimize = Instance.new("TextButton")
-local Maximize = Instance.new("TextButton")
 
-ScreenGui.Name = "XuanHubAutoExecute"
+ScreenGui.Name = "XuanHubScriptManager"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.IgnoreGuiInset = true
+pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+if not ScreenGui.Parent then ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-if syn and syn.protect_gui then
-    pcall(syn.protect_gui, ScreenGui)
-end
+-- Main Frame
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 700, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -350, 0.5, -225)
+MainFrame.BackgroundColor3 = PANEL_BG
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
 
-local parentGui = typeof(gethui) == "function" and gethui()
-if not parentGui then
-    local ok, coreGui = pcall(game.GetService, game, "CoreGui")
-    if ok then
-        parentGui = coreGui
-    else
-        local players = game:GetService("Players")
-        local localPlayer = players.LocalPlayer or players.PlayerAdded:Wait()
-        parentGui = localPlayer:WaitForChild("PlayerGui")
-    end
-end
-ScreenGui.Parent = parentGui
+-- Title Bar
+TitleBar.Parent = MainFrame
+TitleBar.Size = UDim2.new(1, -80, 0, 40)
+TitleBar.BackgroundColor3 = PANEL_TOP
+TitleBar.BorderSizePixel = 0
+TitleBar.Text = "🌸 Xuan Hub — Script Manager"
+TitleBar.TextColor3 = TEXT_COLOR
+TitleBar.Font = Enum.Font.GothamBold
+TitleBar.TextSize = 16
+TitleBar.TextXAlignment = Enum.TextXAlignment.Left
+local titlePad = Instance.new("UIPadding", TitleBar)
+titlePad.PaddingLeft = UDim.new(0, 15)
 
-Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 460, 0, 320)
-Frame.Position = UDim2.new(0.5, -230, 0.5, -160)
-Frame.BackgroundColor3 = PANEL_GRADIENT_TOP
-Frame.BorderSizePixel = 0
-Frame.ClipsDescendants = false
-local frameCorner = tryInstance("UICorner")
-if frameCorner then
-    frameCorner.CornerRadius = UDim.new(0, 14)
-    frameCorner.Parent = Frame
-end
+MinimizeBtn.Parent = MainFrame
+MinimizeBtn.Size = UDim2.new(0, 40, 0, 40)
+MinimizeBtn.Position = UDim2.new(1, -80, 0, 0)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(94, 28, 80)
+MinimizeBtn.BorderSizePixel = 0
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextColor3 = TEXT_COLOR
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 18
 
-local frameStroke = tryInstance("UIStroke")
-if frameStroke then
-    frameStroke.Color = STROKE_COLOR
-    frameStroke.Transparency = 0.55
-    frameStroke.Thickness = 1.4
-    frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    frameStroke.Parent = Frame
-end
+CloseBtn.Parent = MainFrame
+CloseBtn.Size = UDim2.new(0, 40, 0, 40)
+CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(208, 38, 106)
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = TEXT_COLOR
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 24
 
-local frameGradient = tryInstance("UIGradient")
-if frameGradient then
-    frameGradient.Color = ColorSequence.new(
-        ColorSequenceKeypoint.new(0, PANEL_GRADIENT_TOP),
-        ColorSequenceKeypoint.new(1, PANEL_GRADIENT_BOTTOM)
-    )
-    frameGradient.Rotation = 90
-    frameGradient.Parent = Frame
-end
+-- Left Panel
+LeftPanel.Parent = MainFrame
+LeftPanel.Size = UDim2.new(0, 240, 1, -40)
+LeftPanel.Position = UDim2.new(0, 0, 0, 40)
+LeftPanel.BackgroundColor3 = Color3.fromRGB(28, 10, 24)
+LeftPanel.BorderSizePixel = 0
 
-local frameGlow = tryInstance("ImageLabel")
-if frameGlow then
-    frameGlow.Name = "Glow"
-    frameGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    frameGlow.Position = UDim2.new(0.5, 0, 0.5, 6)
-    frameGlow.Size = UDim2.new(1, 52, 1, 52)
-    frameGlow.BackgroundTransparency = 1
-    frameGlow.Image = "rbxassetid://4996891970"
-    frameGlow.ImageColor3 = BUTTON_PRIMARY
-    frameGlow.ImageTransparency = 0.55
-    frameGlow.ZIndex = 0
-    frameGlow.Active = false
-    frameGlow.ScaleType = Enum.ScaleType.Stretch
-    frameGlow.Parent = Frame
-end
-local expandedSize = Frame.Size
-local minimizedSize = UDim2.new(Frame.Size.X.Scale, Frame.Size.X.Offset, 0, 40)
+LeftTitle.Parent = LeftPanel
+LeftTitle.Size = UDim2.new(1, 0, 0, 35)
+LeftTitle.BackgroundColor3 = Color3.fromRGB(48, 14, 40)
+LeftTitle.BorderSizePixel = 0
+LeftTitle.Text = "📂 My Scripts"
+LeftTitle.TextColor3 = TEXT_COLOR
+LeftTitle.Font = Enum.Font.GothamBold
+LeftTitle.TextSize = 14
 
--- TITLE BAR (DRAG HANDLE)
-TitleBar.Parent = Frame
-TitleBar.Size = UDim2.new(1, 0, 0, 40)
-setSafe(TitleBar, "Text", "🌸 Xuan Hub — AutoExecute Manager")
-setSafe(TitleBar, "TextColor3", TEXT_PRIMARY)
-setSafe(TitleBar, "BackgroundColor3", Color3.fromRGB(96, 24, 82))
-setSafe(TitleBar, "BackgroundTransparency", 0.1)
-setSafe(TitleBar, "Font", FONT_TITLE)
-setSafe(TitleBar, "TextSize", 18)
-setSafe(TitleBar, "BorderSizePixel", 0)
-setSafe(TitleBar, "TextXAlignment", Enum.TextXAlignment.Left)
-setSafe(TitleBar, "TextStrokeColor3", STROKE_COLOR)
-setSafe(TitleBar, "TextStrokeTransparency", 0.7)
-TitleBar.ZIndex = 2
-local titlePadding = tryInstance("UIPadding")
-if titlePadding then
-    titlePadding.PaddingLeft = UDim.new(0, 16)
-    titlePadding.Parent = TitleBar
-end
+ScriptsList.Parent = LeftPanel
+ScriptsList.Size = UDim2.new(1, -10, 1, -90)
+ScriptsList.Position = UDim2.new(0, 5, 0, 40)
+ScriptsList.BackgroundTransparency = 1
+ScriptsList.BorderSizePixel = 0
+ScriptsList.ScrollBarThickness = 6
+ScriptsList.CanvasSize = UDim2.new(0, 0, 0, 0)
 
--- TEXTBOX
-Box.Parent = Frame
-Box.Position = UDim2.new(0, 16, 0, 58)
-Box.Size = UDim2.new(1, -32, 0, 160)
-Box.MultiLine = true
-Box.ClearTextOnFocus = false
-Box.TextWrapped = true
-Box.TextYAlignment = Enum.TextYAlignment.Top
-Box.Font = FONT_TEXTBOX
-setSafe(Box, "TextSize", 15)
-setSafe(Box, "LineHeight", 1.25)
-setSafe(Box, "Text", "")
-setSafe(Box, "BackgroundColor3", Color3.fromRGB(54, 12, 46))
-setSafe(Box, "TextColor3", TEXT_PRIMARY)
-setSafe(Box, "PlaceholderText", "-- Paste your script here")
-setSafe(Box, "PlaceholderColor3", TEXT_SECONDARY)
-setSafe(Box, "TextXAlignment", Enum.TextXAlignment.Left)
-setSafe(Box, "TextStrokeTransparency", 0.9)
-local boxCorner = tryInstance("UICorner")
-if boxCorner then
-    boxCorner.CornerRadius = UDim.new(0, 10)
-    boxCorner.Parent = Box
-end
+AddNewBtn.Parent = LeftPanel
+AddNewBtn.Size = UDim2.new(1, -20, 0, 36)
+AddNewBtn.Position = UDim2.new(0, 10, 1, -46)
+AddNewBtn.BackgroundColor3 = PINK_PRIMARY
+AddNewBtn.BorderSizePixel = 0
+AddNewBtn.Text = "+ New Script"
+AddNewBtn.TextColor3 = TEXT_COLOR
+AddNewBtn.Font = Enum.Font.GothamBold
+AddNewBtn.TextSize = 13
 
-local boxStroke = tryInstance("UIStroke")
-if boxStroke then
-    boxStroke.Color = STROKE_COLOR
-    boxStroke.Transparency = 0.75
-    boxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    boxStroke.Parent = Box
-end
+-- Right Panel
+RightPanel.Parent = MainFrame
+RightPanel.Size = UDim2.new(1, -240, 1, -40)
+RightPanel.Position = UDim2.new(0, 240, 0, 40)
+RightPanel.BackgroundColor3 = Color3.fromRGB(22, 8, 20)
+RightPanel.BorderSizePixel = 0
 
--- BUTTONS
-Save.Parent = Frame
-Save.Position = UDim2.new(0, 16, 0, 220)
-Save.Size = UDim2.new(0.5, -26, 0, 36)
-setSafe(Save, "Text", "💾 Save")
-setSafe(Save, "BackgroundColor3", BUTTON_PRIMARY)
-setSafe(Save, "TextColor3", TEXT_PRIMARY)
-setSafe(Save, "Font", FONT_BUTTON)
-setSafe(Save, "TextSize", 14)
-Save.AutoButtonColor = false
+RightTitle.Parent = RightPanel
+RightTitle.Size = UDim2.new(1, 0, 0, 35)
+RightTitle.BackgroundColor3 = Color3.fromRGB(48, 14, 40)
+RightTitle.BorderSizePixel = 0
+RightTitle.Text = "✏️ Editor"
+RightTitle.TextColor3 = TEXT_COLOR
+RightTitle.Font = Enum.Font.GothamBold
+RightTitle.TextSize = 14
 
-Load.Parent = Frame
-Load.Position = UDim2.new(0.5, 10, 0, 220)
-Load.Size = UDim2.new(0.5, -26, 0, 36)
-setSafe(Load, "Text", "📂 Load Script")
-setSafe(Load, "BackgroundColor3", BUTTON_SECONDARY)
-setSafe(Load, "TextColor3", TEXT_PRIMARY)
-setSafe(Load, "Font", FONT_BUTTON)
-setSafe(Load, "TextSize", 14)
-Load.AutoButtonColor = false
+EditorBox.Parent = RightPanel
+EditorBox.Size = UDim2.new(1, -20, 1, -120)
+EditorBox.Position = UDim2.new(0, 10, 0, 45)
+EditorBox.BackgroundColor3 = Color3.fromRGB(54, 12, 46)
+EditorBox.BorderSizePixel = 0
+EditorBox.TextColor3 = TEXT_COLOR
+EditorBox.PlaceholderText = "-- Write or paste your script here"
+EditorBox.PlaceholderColor3 = TEXT_DIM
+EditorBox.Text = ""
+EditorBox.MultiLine = true
+EditorBox.ClearTextOnFocus = false
+EditorBox.TextWrapped = true
+EditorBox.TextXAlignment = Enum.TextXAlignment.Left
+EditorBox.TextYAlignment = Enum.TextYAlignment.Top
+EditorBox.Font = Enum.Font.Code
+EditorBox.TextSize = 14
 
-Clear.Parent = Frame
-Clear.Position = UDim2.new(0, 16, 0, 266)
-Clear.Size = UDim2.new(0.3, -6, 0, 32)
-setSafe(Clear, "Text", "🧹 Clear")
-setSafe(Clear, "BackgroundColor3", BUTTON_NEUTRAL)
-setSafe(Clear, "TextColor3", TEXT_PRIMARY)
-setSafe(Clear, "Font", FONT_BUTTON)
-setSafe(Clear, "TextSize", 13)
-Clear.AutoButtonColor = false
+SaveBtn.Parent = RightPanel
+SaveBtn.Size = UDim2.new(0.32, -8, 0, 38)
+SaveBtn.Position = UDim2.new(0, 10, 1, -70)
+SaveBtn.BackgroundColor3 = PINK_PRIMARY
+SaveBtn.BorderSizePixel = 0
+SaveBtn.Text = "💾 Save"
+SaveBtn.TextColor3 = TEXT_COLOR
+SaveBtn.Font = Enum.Font.GothamBold
+SaveBtn.TextSize = 14
 
-Delete.Parent = Frame
-Delete.Position = UDim2.new(0.34, 6, 0, 266)
-Delete.Size = UDim2.new(0.3, -6, 0, 32)
-setSafe(Delete, "Text", "🗑 Delete")
-setSafe(Delete, "BackgroundColor3", BUTTON_DANGER)
-setSafe(Delete, "TextColor3", TEXT_PRIMARY)
-setSafe(Delete, "Font", FONT_BUTTON)
-setSafe(Delete, "TextSize", 13)
-Delete.AutoButtonColor = false
+ExecuteBtn.Parent = RightPanel
+ExecuteBtn.Size = UDim2.new(0.32, -8, 0, 38)
+ExecuteBtn.Position = UDim2.new(0.34, 4, 1, -70)
+ExecuteBtn.BackgroundColor3 = PINK_SECONDARY
+ExecuteBtn.BorderSizePixel = 0
+ExecuteBtn.Text = "▶️ Execute"
+ExecuteBtn.TextColor3 = TEXT_COLOR
+ExecuteBtn.Font = Enum.Font.GothamBold
+ExecuteBtn.TextSize = 14
 
-Status.Parent = Frame
-Status.Position = UDim2.new(0.65, 4, 0, 266)
-Status.Size = UDim2.new(0.34, -20, 0, 32)
-setSafe(Status, "BackgroundColor3", Color3.fromRGB(62, 16, 52))
-setSafe(Status, "BackgroundTransparency", 0.25)
-setSafe(Status, "BorderSizePixel", 0)
-setSafe(Status, "Font", FONT_STATUS)
-setSafe(Status, "TextSize", 13)
-setSafe(Status, "TextColor3", TEXT_SECONDARY)
-setSafe(Status, "TextXAlignment", Enum.TextXAlignment.Center)
-setSafe(Status, "TextYAlignment", Enum.TextYAlignment.Center)
-setSafe(Status, "Text", "✨ Ready")
-Status.ZIndex = 2
-local statusCorner = tryInstance("UICorner")
-if statusCorner then
-    statusCorner.CornerRadius = UDim.new(0, 10)
-    statusCorner.Parent = Status
-end
+DeleteBtn.Parent = RightPanel
+DeleteBtn.Size = UDim2.new(0.32, -8, 0, 38)
+DeleteBtn.Position = UDim2.new(0.68, 8, 1, -70)
+DeleteBtn.BackgroundColor3 = Color3.fromRGB(208, 38, 106)
+DeleteBtn.BorderSizePixel = 0
+DeleteBtn.Text = "🗑️ Delete"
+DeleteBtn.TextColor3 = TEXT_COLOR
+DeleteBtn.Font = Enum.Font.GothamBold
+DeleteBtn.TextSize = 14
 
-local statusStroke = tryInstance("UIStroke")
-if statusStroke then
-    statusStroke.Color = STROKE_COLOR
-    statusStroke.Transparency = 0.75
-    statusStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    statusStroke.Parent = Status
-end
-
-Minimize.Parent = Frame
-Minimize.Size = UDim2.new(0, 28, 0, 24)
-Minimize.Position = UDim2.new(1, -80, 0, 8)
-setSafe(Minimize, "BackgroundColor3", ICON_BUTTON_COLOR)
-setSafe(Minimize, "TextColor3", TEXT_PRIMARY)
-setSafe(Minimize, "Font", FONT_ICON)
-setSafe(Minimize, "TextSize", 16)
-setSafe(Minimize, "Text", "—")
-Minimize.AutoButtonColor = false
-Minimize.ZIndex = 3
-
-Maximize.Parent = Frame
-Maximize.Size = UDim2.new(0, 28, 0, 24)
-Maximize.Position = UDim2.new(1, -44, 0, 8)
-setSafe(Maximize, "BackgroundColor3", ICON_BUTTON_COLOR)
-setSafe(Maximize, "TextColor3", TEXT_PRIMARY)
-setSafe(Maximize, "Font", FONT_ICON)
-setSafe(Maximize, "TextSize", 16)
-setSafe(Maximize, "Text", "⬜")
-Maximize.Visible = false
-Maximize.AutoButtonColor = false
-Maximize.ZIndex = 3
+Status.Parent = RightPanel
+Status.Size = UDim2.new(1, -20, 0, 22)
+Status.Position = UDim2.new(0, 10, 1, -28)
+Status.BackgroundTransparency = 1
+Status.Text = "✨ Ready"
+Status.TextColor3 = TEXT_DIM
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 12
+Status.TextXAlignment = Enum.TextXAlignment.Center
 
 -- LOGIC
-local minimized = false
-local bodyElements = {Box, Save, Load, Clear, Delete, Status}
-local folderReady = false
+local currentScriptName = nil
+local scriptButtons = {}
 
-local function ensureAutoExecFolder()
-    if folderReady then
-        return true
-    end
-
-    local ok, err = pcall(function()
-        if isfolder and not isfolder(AUTOEXEC_FOLDER) then
-            if makefolder then
-                makefolder(AUTOEXEC_FOLDER)
+local function getScriptFiles()
+    local files = {}
+    pcall(function()
+        if isfolder and listfiles then
+            for _, filepath in pairs(listfiles(SCRIPTS_FOLDER)) do
+                local filename = filepath:match("([^/\\]+)$")
+                if filename:match("%.txt$") or filename:match("%.lua$") then
+                    table.insert(files, filename)
+                end
             end
         end
     end)
-
-    if ok then
-        folderReady = (not isfolder) or isfolder(AUTOEXEC_FOLDER)
-        if not folderReady then
-            Status.Text = "❗ Folder blocked"
-            return false
-        end
-        return true
-    else
-        warn("Failed to prepare auto-execute folder:", err)
-        Status.Text = "❗ Folder error"
-        return false
-    end
+    return files
 end
 
-local function stylizeButton(button, baseColor, textSize, cornerRadius, font)
-    local hovered = false
-    local hoverColor = baseColor:Lerp(Color3.new(1, 1, 1), 0.18)
-    local pressedColor = baseColor:Lerp(Color3.new(0, 0, 0), 0.2)
-
-    button.AutoButtonColor = false
-    button.BackgroundColor3 = baseColor
-    button.TextColor3 = TEXT_PRIMARY
-    button.Font = font or FONT_BUTTON
-    button.TextSize = textSize or button.TextSize
-    button.ZIndex = math.max(button.ZIndex, 2)
-
-    local corner = tryInstance("UICorner")
-    if corner then
-        corner.CornerRadius = UDim.new(0, cornerRadius or 10)
-        corner.Parent = button
+local function refreshScriptList()
+    for _, btn in pairs(scriptButtons) do
+        btn:Destroy()
     end
-
-    local stroke = tryInstance("UIStroke")
-    if stroke then
-        stroke.Color = STROKE_COLOR
-        stroke.Transparency = 0.6
-        stroke.Thickness = 1
-        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        stroke.Parent = button
+    scriptButtons = {}
+    
+    local files = getScriptFiles()
+    local yOffset = 0
+    
+    for _, filename in ipairs(files) do
+        local btn = Instance.new("TextButton")
+        btn.Parent = ScriptsList
+        btn.Size = UDim2.new(1, -10, 0, 32)
+        btn.Position = UDim2.new(0, 0, 0, yOffset)
+        btn.BackgroundColor3 = Color3.fromRGB(48, 14, 40)
+        btn.BorderSizePixel = 0
+        btn.Text = "  " .. filename:gsub("%.txt$", ""):gsub("%.lua$", "")
+        btn.TextColor3 = TEXT_COLOR
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 12
+        btn.TextXAlignment = Enum.TextXAlignment.Left
+        
+        btn.MouseButton1Click:Connect(function()
+            currentScriptName = filename
+            local filepath = SCRIPTS_FOLDER .. "/" .. filename
+            if isfile(filepath) then
+                EditorBox.Text = readfile(filepath)
+                Status.Text = "📜 Loaded: " .. filename
+                RightTitle.Text = "✏️ Editing: " .. filename:gsub("%.txt$", ""):gsub("%.lua$", "")
+            end
+        end)
+        
+        table.insert(scriptButtons, btn)
+        yOffset = yOffset + 36
     end
-
-        if button.MouseEnter and button.MouseLeave then
-            button.MouseEnter:Connect(function()
-                hovered = true
-                button.BackgroundColor3 = hoverColor
-            end)
-
-            button.MouseLeave:Connect(function()
-                hovered = false
-                button.BackgroundColor3 = baseColor
-            end)
-        end
-
-        if button.MouseButton1Down then
-            button.MouseButton1Down:Connect(function()
-                button.BackgroundColor3 = pressedColor
-            end)
-        end
-
-        if button.MouseButton1Up then
-            button.MouseButton1Up:Connect(function()
-                if hovered then
-                    button.BackgroundColor3 = hoverColor
-                else
-                    button.BackgroundColor3 = baseColor
-                end
-            end)
-        end
+    
+    ScriptsList.CanvasSize = UDim2.new(0, 0, 0, yOffset)
 end
 
-stylizeButton(Save, BUTTON_PRIMARY, 14)
-stylizeButton(Load, BUTTON_SECONDARY, 14)
-stylizeButton(Clear, BUTTON_NEUTRAL, 13)
-stylizeButton(Delete, BUTTON_DANGER, 13)
-stylizeButton(Minimize, ICON_BUTTON_COLOR, 16, 8, FONT_ICON)
-stylizeButton(Maximize, ICON_BUTTON_COLOR, 16, 8, FONT_ICON)
-
--- Collapse or restore the UI body while keeping the title bar draggable
-local function setMinimized(state)
-    if minimized == state then
-        return
+AddNewBtn.MouseButton1Click:Connect(function()
+    local scriptNum = 1
+    local newName = "Script" .. scriptNum .. ".txt"
+    
+    while isfile(SCRIPTS_FOLDER .. "/" .. newName) do
+        scriptNum = scriptNum + 1
+        newName = "Script" .. scriptNum .. ".txt"
     end
-
-    minimized = state
-
-    if minimized then
-        expandedSize = Frame.Size
-        Frame.Size = minimizedSize
-        for _, element in ipairs(bodyElements) do
-            element.Visible = false
-        end
-        Minimize.Visible = false
-        Maximize.Visible = true
-    else
-        Frame.Size = expandedSize
-        for _, element in ipairs(bodyElements) do
-            element.Visible = true
-        end
-        Minimize.Visible = true
-        Maximize.Visible = false
-    end
-end
-
-Save.MouseButton1Click:Connect(function()
-    if Box.Text == "" then
-        Status.Text = "⚠️ Empty"
-        return
-    end
-    if not ensureAutoExecFolder() then
-        return
-    end
-    local ok, err = pcall(function()
-        writefile(FILE_PATH, Box.Text)
+    
+    pcall(function()
+        writefile(SCRIPTS_FOLDER .. "/" .. newName, "-- New script")
     end)
-    if ok then
-        Status.Text = "✅ Saved"
+    
+    refreshScriptList()
+    currentScriptName = newName
+    EditorBox.Text = "-- New script"
+    RightTitle.Text = "✏️ Editing: " .. newName:gsub("%.txt$", "")
+    Status.Text = "✅ Created: " .. newName
+end)
+
+SaveBtn.MouseButton1Click:Connect(function()
+    if not currentScriptName then
+        Status.Text = "⚠️ No script selected"
+        return
+    end
+    
+    if EditorBox.Text == "" then
+        Status.Text = "⚠️ Editor is empty"
+        return
+    end
+    
+    local filepath = SCRIPTS_FOLDER .. "/" .. currentScriptName
+    pcall(function()
+        writefile(filepath, EditorBox.Text)
+    end)
+    Status.Text = "✅ Saved: " .. currentScriptName
+end)
+
+ExecuteBtn.MouseButton1Click:Connect(function()
+    if EditorBox.Text == "" then
+        Status.Text = "⚠️ Nothing to execute"
+        return
+    end
+    
+    local success, err = pcall(function()
+        loadstring(EditorBox.Text)()
+    end)
+    
+    if success then
+        Status.Text = "✅ Executed successfully"
     else
-        warn("Failed to save auto-exec:", err)
-        Status.Text = "❌ Save failed"
+        Status.Text = "❌ Error: " .. tostring(err):sub(1, 30)
+        warn("Execution error:", err)
     end
 end)
 
-Load.MouseButton1Click:Connect(function()
-    if isfile(FILE_PATH) then
-        local ok, result = pcall(function()
-            return readfile(FILE_PATH)
+DeleteBtn.MouseButton1Click:Connect(function()
+    if not currentScriptName then
+        Status.Text = "⚠️ No script selected"
+        return
+    end
+    
+    local filepath = SCRIPTS_FOLDER .. "/" .. currentScriptName
+    if isfile(filepath) then
+        pcall(function()
+            delfile(filepath)
         end)
-        if ok then
-            Box.Text = result
-            Status.Text = "📜 Loaded"
-        else
-            warn("Failed to load auto-exec:", result)
-            Status.Text = "❌ Load failed"
-        end
-    else
-        Status.Text = "❌ No file"
+        Status.Text = "🗑️ Deleted: " .. currentScriptName
+        EditorBox.Text = ""
+        RightTitle.Text = "✏️ Editor"
+        currentScriptName = nil
+        refreshScriptList()
     end
 end)
 
-Clear.MouseButton1Click:Connect(function()
-    Box.Text = ""
-    Status.Text = "🧹 Cleared"
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
 
-Delete.MouseButton1Click:Connect(function()
-    if isfile(FILE_PATH) then
-        local ok, err = pcall(function()
-            delfile(FILE_PATH)
-        end)
-        if ok then
-            Status.Text = "🗑 Deleted"
-        else
-            warn("Failed to delete auto-exec:", err)
-            Status.Text = "❌ Delete failed"
-        end
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        MainFrame.Size = UDim2.new(0, 700, 0, 40)
+        MinimizeBtn.Text = "□"
     else
-        Status.Text = "❌ No file"
+        MainFrame.Size = UDim2.new(0, 700, 0, 450)
+        MinimizeBtn.Text = "—"
     end
 end)
 
-Minimize.MouseButton1Click:Connect(function()
-    setMinimized(true)
-end)
-
-Maximize.MouseButton1Click:Connect(function()
-    setMinimized(false)
-end)
-
--- 🔥 DRAGGING LOGIC
+-- DRAGGING
 local dragging = false
 local dragStart, startPos
 
@@ -474,7 +355,7 @@ TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = Frame.Position
+        startPos = MainFrame.Position
     end
 end)
 
@@ -487,7 +368,7 @@ end)
 UIS.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
-        Frame.Position = UDim2.new(
+        MainFrame.Position = UDim2.new(
             startPos.X.Scale,
             startPos.X.Offset + delta.X,
             startPos.Y.Scale,
@@ -495,3 +376,6 @@ UIS.InputChanged:Connect(function(input)
         )
     end
 end)
+
+-- Initial load
+refreshScriptList()
