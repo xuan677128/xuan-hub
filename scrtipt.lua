@@ -707,5 +707,3 @@ tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end
 
 -- Init
 switchTab("AutoExec")
-
-
