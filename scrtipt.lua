@@ -6,11 +6,12 @@ local TweenService = game:GetService("TweenService")
 -- File System Setup
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
-local AUTOEXEC_FILE = ROOT .. "/autoexec.txt"
-local LEGACY_AUTOEXEC = "autoexec.txt"
+local AUTOEXEC_FOLDER = "Autoexecute"
+local AUTOEXEC_FILE = AUTOEXEC_FOLDER .. "/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
+if not isfolder(AUTOEXEC_FOLDER) then makefolder(AUTOEXEC_FOLDER) end
 if not isfile(AUTOEXEC_FILE) then writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')") end
 
 -- UI Constants
@@ -274,8 +275,16 @@ AutoBox.TextXAlignment = Enum.TextXAlignment.Left
 AutoBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoBox.ClearTextOnFocus = false
 AutoBox.MultiLine = true
+AutoBox.TextWrapped = true -- Fix overflow
 AutoBox.Text = readfile(AUTOEXEC_FILE)
 AutoBox.Parent = AutoExecPage
+
+local AutoPadding = Instance.new("UIPadding")
+AutoPadding.PaddingLeft = UDim.new(0, 8)
+AutoPadding.PaddingRight = UDim.new(0, 8)
+AutoPadding.PaddingTop = UDim.new(0, 8)
+AutoPadding.PaddingBottom = UDim.new(0, 8)
+AutoPadding.Parent = AutoBox
 
 local AutoCorner = Instance.new("UICorner")
 AutoCorner.CornerRadius = UDim.new(0, 8)
@@ -297,7 +306,6 @@ AutoSaveCorner.Parent = AutoSave
 
 AutoSave.MouseButton1Click:Connect(function()
     writefile(AUTOEXEC_FILE, AutoBox.Text)
-    writefile(LEGACY_AUTOEXEC, AutoBox.Text)
     AutoSave.Text = "Saved!"
     wait(1)
     AutoSave.Text = "Save AutoExec"
@@ -366,8 +374,16 @@ ScriptEditor.TextXAlignment = Enum.TextXAlignment.Left
 ScriptEditor.TextYAlignment = Enum.TextYAlignment.Top
 ScriptEditor.ClearTextOnFocus = false
 ScriptEditor.MultiLine = true
+ScriptEditor.TextWrapped = true -- Fix overflow
 ScriptEditor.Text = "-- Select a script to edit"
 ScriptEditor.Parent = EditorContainer
+
+local EditorPadding = Instance.new("UIPadding")
+EditorPadding.PaddingLeft = UDim.new(0, 8)
+EditorPadding.PaddingRight = UDim.new(0, 8)
+EditorPadding.PaddingTop = UDim.new(0, 8)
+EditorPadding.PaddingBottom = UDim.new(0, 8)
+EditorPadding.Parent = ScriptEditor
 
 local EditorCorner = Instance.new("UICorner")
 EditorCorner.CornerRadius = UDim.new(0, 8)
@@ -417,7 +433,7 @@ end)
 createControlBtn("✏️", THEME.Sidebar, 0.40, function()
     if CurrentScriptFile and FileNameBox.Text ~= "" then
         local newName = FileNameBox.Text
-        if not newName:match("%.lua$") then newName = newName .. ".lua" end
+        if not newName:match("%.txt$") then newName = newName .. ".txt" end
         
         if newName ~= CurrentScriptFile then
             writefile(SCRIPTS_DIR .. "/" .. newName, ScriptEditor.Text)
@@ -431,7 +447,7 @@ end)
 createControlBtn("📄", THEME.Sidebar, 0.60, function()
     CurrentScriptFile = nil
     ScriptEditor.Text = ""
-    local name = "Script_" .. math.random(1000) .. ".lua"
+    local name = "Script_" .. math.random(1000) .. ".txt"
     CurrentScriptFile = name
     FileNameBox.Text = name
     writefile(SCRIPTS_DIR .. "/" .. name, "")
