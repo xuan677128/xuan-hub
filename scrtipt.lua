@@ -7,24 +7,20 @@ local TweenService = game:GetService("TweenService")
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
 local AUTOEXEC_DIR = ROOT .. "/Autoexecute"
+local AUTOEXEC_FILE = AUTOEXEC_DIR .. "/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 
+if not isfile(AUTOEXEC_FILE) then 
+    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')") 
+end
+
 -- Internal Auto Execution
 pcall(function()
-    local autoFiles = listfiles(AUTOEXEC_DIR)
-    if #autoFiles == 0 then
-        writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')")
-    end
-    
-    for _, file in pairs(listfiles(AUTOEXEC_DIR)) do
-        if file:match("%.txt$") or file:match("%.lua$") then
-            spawn(function()
-                loadstring(readfile(file))()
-            end)
-        end
+    if isfile(AUTOEXEC_FILE) then
+        loadstring(readfile(AUTOEXEC_FILE))()
     end
 end)
 
@@ -308,172 +304,70 @@ AutoExecPage.BackgroundTransparency = 1
 AutoExecPage.Visible = false
 AutoExecPage.Parent = Content
 
--- AutoExec List (Left Side)
-local AutoListContainer = Instance.new("Frame")
-AutoListContainer.Size = UDim2.new(0, 140, 1, 0)
-AutoListContainer.BackgroundColor3 = THEME.Item
-AutoListContainer.Parent = AutoExecPage
+local AutoBox = Instance.new("TextBox")
+AutoBox.Size = UDim2.new(1, 0, 1, -45)
+AutoBox.BackgroundColor3 = THEME.Item
+AutoBox.TextColor3 = THEME.Text
+AutoBox.Font = Enum.Font.Code
+AutoBox.TextSize = 13
+AutoBox.TextXAlignment = Enum.TextXAlignment.Left
+AutoBox.TextYAlignment = Enum.TextYAlignment.Top
+AutoBox.ClearTextOnFocus = false
+AutoBox.MultiLine = true
+AutoBox.TextWrapped = true
+AutoBox.Text = readfile(AUTOEXEC_FILE)
+AutoBox.Parent = AutoExecPage
 
-local AutoListCorner = Instance.new("UICorner")
-AutoListCorner.CornerRadius = UDim.new(0, 8)
-AutoListCorner.Parent = AutoListContainer
+local AutoPadding = Instance.new("UIPadding")
+AutoPadding.PaddingLeft = UDim.new(0, 8)
+AutoPadding.PaddingRight = UDim.new(0, 8)
+AutoPadding.PaddingTop = UDim.new(0, 8)
+AutoPadding.PaddingBottom = UDim.new(0, 8)
+AutoPadding.Parent = AutoBox
 
-local AutoList = Instance.new("ScrollingFrame")
-AutoList.Size = UDim2.new(1, -10, 1, -10)
-AutoList.Position = UDim2.new(0, 5, 0, 5)
-AutoList.BackgroundTransparency = 1
-AutoList.ScrollBarThickness = 2
-AutoList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-AutoList.CanvasSize = UDim2.new(0, 0, 0, 0)
-AutoList.Parent = AutoListContainer
+local AutoCorner = Instance.new("UICorner")
+AutoCorner.CornerRadius = UDim.new(0, 8)
+AutoCorner.Parent = AutoBox
 
-local AutoListLayout = Instance.new("UIListLayout")
-AutoListLayout.Padding = UDim.new(0, 5)
-AutoListLayout.Parent = AutoList
+local AutoClear = Instance.new("TextButton")
+AutoClear.Size = UDim2.new(0, 120, 0, 35)
+AutoClear.Position = UDim2.new(1, -250, 1, -35)
+AutoClear.BackgroundColor3 = THEME.Sidebar
+AutoClear.Text = "Clear"
+AutoClear.TextColor3 = THEME.Text
+AutoClear.Font = Enum.Font.GothamBold
+AutoClear.TextSize = 14
+AutoClear.Parent = AutoExecPage
 
--- AutoExec Editor (Right Side)
-local AutoEditorContainer = Instance.new("Frame")
-AutoEditorContainer.Size = UDim2.new(1, -150, 1, 0)
-AutoEditorContainer.Position = UDim2.new(0, 150, 0, 0)
-AutoEditorContainer.BackgroundTransparency = 1
-AutoEditorContainer.Parent = AutoExecPage
+local AutoClearCorner = Instance.new("UICorner")
+AutoClearCorner.CornerRadius = UDim.new(0, 8)
+AutoClearCorner.Parent = AutoClear
 
-local AutoFileNameBox = Instance.new("TextBox")
-AutoFileNameBox.Size = UDim2.new(1, 0, 0, 30)
-AutoFileNameBox.Position = UDim2.new(0, 0, 0, 0)
-AutoFileNameBox.BackgroundColor3 = THEME.Item
-AutoFileNameBox.TextColor3 = THEME.Accent
-AutoFileNameBox.Font = Enum.Font.GothamBold
-AutoFileNameBox.TextSize = 14
-AutoFileNameBox.Text = "AutoExec Name"
-AutoFileNameBox.ClearTextOnFocus = false
-AutoFileNameBox.Parent = AutoEditorContainer
-
-local AutoFileCorner = Instance.new("UICorner")
-AutoFileCorner.CornerRadius = UDim.new(0, 6)
-AutoFileCorner.Parent = AutoFileNameBox
-
-local AutoEditor = Instance.new("TextBox")
-AutoEditor.Size = UDim2.new(1, 0, 1, -80)
-AutoEditor.Position = UDim2.new(0, 0, 0, 35)
-AutoEditor.BackgroundColor3 = THEME.Item
-AutoEditor.TextColor3 = THEME.Text
-AutoEditor.Font = Enum.Font.Code
-AutoEditor.TextSize = 13
-AutoEditor.TextXAlignment = Enum.TextXAlignment.Left
-AutoEditor.TextYAlignment = Enum.TextYAlignment.Top
-AutoEditor.ClearTextOnFocus = false
-AutoEditor.MultiLine = true
-AutoEditor.TextWrapped = true
-AutoEditor.Text = "-- Select an auto-exec file"
-AutoEditor.Parent = AutoEditorContainer
-
-local AutoEditorPadding = Instance.new("UIPadding")
-AutoEditorPadding.PaddingLeft = UDim.new(0, 8)
-AutoEditorPadding.PaddingRight = UDim.new(0, 8)
-AutoEditorPadding.PaddingTop = UDim.new(0, 8)
-AutoEditorPadding.PaddingBottom = UDim.new(0, 8)
-AutoEditorPadding.Parent = AutoEditor
-
-local AutoEditorCorner = Instance.new("UICorner")
-AutoEditorCorner.CornerRadius = UDim.new(0, 8)
-AutoEditorCorner.Parent = AutoEditor
-
--- AutoExec Controls
-local AutoControls = Instance.new("Frame")
-AutoControls.Size = UDim2.new(1, 0, 0, 40)
-AutoControls.Position = UDim2.new(0, 0, 1, -40)
-AutoControls.BackgroundTransparency = 1
-AutoControls.Parent = AutoEditorContainer
-
-local CurrentAutoFile = nil
-
-local function createAutoBtn(text, color, posScale, callback)
-    local btn = Instance.new("TextButton")
-    btn.Text = text
-    btn.BackgroundColor3 = color
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.Size = UDim2.new(0.24, 0, 0, 30) -- 4 buttons
-    btn.Position = UDim2.new(posScale, 0, 0.5, -15)
-    btn.Parent = AutoControls
-    
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 6)
-    c.Parent = btn
-    
-    btn.MouseButton1Click:Connect(callback)
-    return btn
-end
-
-function refreshAutoExec()
-    for _, v in pairs(AutoList:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
-    end
-    
-    local files = listfiles(AUTOEXEC_DIR)
-    for _, file in pairs(files) do
-        local name = file:match("([^/]+)$")
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
-        btn.BackgroundColor3 = THEME.Sidebar
-        btn.Text = name
-        btn.TextColor3 = THEME.Text
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 12
-        btn.Parent = AutoList
-        
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 4)
-        c.Parent = btn
-        
-        btn.MouseButton1Click:Connect(function()
-            CurrentAutoFile = name
-            AutoFileNameBox.Text = name
-            AutoEditor.Text = readfile(file)
-            for _, b in pairs(AutoList:GetChildren()) do
-                if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
-            end
-            btn.BackgroundColor3 = THEME.Accent
-        end)
-    end
-    AutoList.CanvasSize = UDim2.new(0, 0, 0, #files * 35)
-end
-
--- Buttons: Save, New, Delete, Clear
-createAutoBtn("💾", THEME.Accent, 0, function()
-    if CurrentAutoFile then
-        writefile(AUTOEXEC_DIR .. "/" .. CurrentAutoFile, AutoEditor.Text)
-        notify("Saved AutoExec!", THEME.Accent)
-    end
-end)
-
-createAutoBtn("📄", THEME.Sidebar, 0.25, function()
-    CurrentAutoFile = nil
-    AutoEditor.Text = ""
-    local name = "Auto_" .. math.random(1000) .. ".txt"
-    CurrentAutoFile = name
-    AutoFileNameBox.Text = name
-    writefile(AUTOEXEC_DIR .. "/" .. name, "")
-    refreshAutoExec()
-    notify("New AutoExec Created!", THEME.Sidebar)
-end)
-
-createAutoBtn("🗑", THEME.Red, 0.50, function()
-    if CurrentAutoFile then
-        delfile(AUTOEXEC_DIR .. "/" .. CurrentAutoFile)
-        CurrentAutoFile = nil
-        AutoEditor.Text = ""
-        AutoFileNameBox.Text = "AutoExec Name"
-        refreshAutoExec()
-        notify("Deleted!", THEME.Red)
-    end
-end)
-
-createAutoBtn("Clear", THEME.Sidebar, 0.75, function()
-    AutoEditor.Text = ""
+AutoClear.MouseButton1Click:Connect(function()
+    AutoBox.Text = ""
     notify("Cleared!", THEME.Sidebar)
+end)
+
+local AutoSave = Instance.new("TextButton")
+AutoSave.Size = UDim2.new(0, 120, 0, 35)
+AutoSave.Position = UDim2.new(1, -120, 1, -35)
+AutoSave.BackgroundColor3 = THEME.Accent
+AutoSave.Text = "Save AutoExec"
+AutoSave.TextColor3 = Color3.new(1,1,1)
+AutoSave.Font = Enum.Font.GothamBold
+AutoSave.TextSize = 14
+AutoSave.Parent = AutoExecPage
+
+local AutoSaveCorner = Instance.new("UICorner")
+AutoSaveCorner.CornerRadius = UDim.new(0, 8)
+AutoSaveCorner.Parent = AutoSave
+
+AutoSave.MouseButton1Click:Connect(function()
+    writefile(AUTOEXEC_FILE, AutoBox.Text)
+    AutoSave.Text = "Saved!"
+    notify("AutoExec Saved!", THEME.Green)
+    wait(1)
+    AutoSave.Text = "Save AutoExec"
 end)
 
 -- PAGE: Settings
@@ -510,7 +404,6 @@ end)
 local ThemeLabel = Instance.new("TextLabel")
 ThemeLabel.Size = UDim2.new(1, 0, 0, 30)
 ThemeLabel.BackgroundTransparency = 1
-ThemeLabel.Text = "Theme Color"
 ThemeLabel.TextColor3 = THEME.SubText
 ThemeLabel.Font = Enum.Font.GothamBold
 ThemeLabel.TextSize = 14
@@ -575,117 +468,6 @@ for _, colorData in ipairs(colors) do
     end)
 end
 
--- Utilities Section
-local UtilsLabel = Instance.new("TextLabel")
-UtilsLabel.Size = UDim2.new(1, 0, 0, 30)
-UtilsLabel.BackgroundTransparency = 1
-UtilsLabel.Text = "Utilities"
-UtilsLabel.TextColor3 = THEME.SubText
-UtilsLabel.Font = Enum.Font.GothamBold
-UtilsLabel.TextSize = 14
-UtilsLabel.TextXAlignment = Enum.TextXAlignment.Left
-UtilsLabel.Parent = SettingsPage
-
-local UtilsContainer = Instance.new("Frame")
-UtilsContainer.Size = UDim2.new(1, 0, 0, 170) -- Increased height for more buttons
-UtilsContainer.BackgroundTransparency = 1
-UtilsContainer.Parent = SettingsPage
-
-local UtilsLayout = Instance.new("UIListLayout")
-UtilsLayout.Padding = UDim.new(0, 10)
-UtilsLayout.Parent = UtilsContainer
-
-local function createUtilBtn(text, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 35)
-    btn.BackgroundColor3 = THEME.Item
-    btn.Text = text
-    btn.TextColor3 = THEME.Text
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.Parent = UtilsContainer
-    
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 6)
-    c.Parent = btn
-    
-    btn.MouseButton1Click:Connect(callback)
-    return btn
-end
-
--- Rejoin Server
-createUtilBtn("Rejoin Server", function()
-    notify("Rejoining...", THEME.Accent)
-    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-end)
-
--- Server Hop (Public)
-createUtilBtn("Server Hop (Public)", function()
-    notify("Finding Server...", THEME.Accent)
-    local Http = game:GetService("HttpService")
-    local TPS = game:GetService("TeleportService")
-    local Api = "https://games.roblox.com/v1/games/"
-    
-    local _place = game.PlaceId
-    local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
-    
-    local function ListServers(cursor)
-        local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
-        return Http:JSONDecode(Raw)
-    end
-    
-    local Server, Next; repeat
-        local Servers = ListServers(Next)
-        Server = Servers.data[1]
-        Next = Servers.nextPageCursor
-    until Server
-    
-    TPS:TeleportToPlaceInstance(_place, Server.id, game.Players.LocalPlayer)
-end)
-
--- Anti-AFK
-local antiAfkEnabled = false
-createUtilBtn("Enable Anti-AFK", function()
-    if not antiAfkEnabled then
-        antiAfkEnabled = true
-        notify("Anti-AFK Enabled!", THEME.Green)
-        
-        local vu = game:GetService("VirtualUser")
-        game:GetService("Players").LocalPlayer.Idled:Connect(function()
-            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            wait(1)
-            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        end)
-    else
-        notify("Anti-AFK Already Active", THEME.Sidebar)
-    end
-end)
-
--- Auto Reconnect
-local autoRejoinEnabled = false
-createUtilBtn("Enable Auto Reconnect", function()
-    if not autoRejoinEnabled then
-        autoRejoinEnabled = true
-        notify("Auto Reconnect Enabled!", THEME.Green)
-        
-        spawn(function()
-            while wait(1) do
-                if autoRejoinEnabled then
-                    local success, err = pcall(function()
-                        game.CoreGui.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
-                            if child.Name == 'ErrorPrompt' and child:FindFirstChild('MessageArea') and child.MessageArea:FindFirstChild("ErrorFrame") then
-                                game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-                            end
-                        end)
-                    end)
-                end
-            end
-        end)
-    else
-        notify("Auto Reconnect Already Active", THEME.Sidebar)
-    end
-end)
-
 -- PAGE: About
 local AboutPage = Instance.new("Frame")
 AboutPage.Size = UDim2.new(1, 0, 1, 0)
@@ -706,7 +488,7 @@ local AboutText = Instance.new("TextLabel")
 AboutText.Size = UDim2.new(1, -20, 1, -10)
 AboutText.Position = UDim2.new(0, 10, 0, 5)
 AboutText.BackgroundTransparency = 1
-AboutText.Text = "XuanHub Remastered\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
+AboutText.Text = "XuanHub Remastered\n\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
 AboutText.TextColor3 = THEME.Text
 AboutText.Font = Enum.Font.Gotham
 AboutText.TextSize = 13
@@ -915,10 +697,7 @@ tabs["Settings"] = { Button = createTabButton("Settings", 2), Page = SettingsPag
 tabs["About"] = { Button = createTabButton("About", 3), Page = AboutPage }
 
 -- Button Events
-tabs["AutoExec"].Button.MouseButton1Click:Connect(function() 
-    switchTab("AutoExec") 
-    refreshAutoExec()
-end)
+tabs["AutoExec"].Button.MouseButton1Click:Connect(function() switchTab("AutoExec") end)
 tabs["Scripts"].Button.MouseButton1Click:Connect(function() 
     switchTab("Scripts") 
     refreshScripts()
