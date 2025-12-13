@@ -74,6 +74,7 @@ Notification.TextColor3 = THEME.Text
 Notification.Font = Enum.Font.GothamBold
 Notification.TextSize = 12
 Notification.Text = "Notification"
+Notification.TextWrapped = true -- Allow multi-line errors
 Notification.Visible = false
 Notification.ZIndex = 100
 Notification.Parent = MainFrame
@@ -346,6 +347,8 @@ AutoSaveCorner.Parent = AutoSave
 AutoSave.MouseButton1Click:Connect(function()
     -- Use pcall to safely attempt writing (creates file if missing)
     local success, err = pcall(function()
+        -- Try to ensure directory exists
+        if not isfolder("../Autoexecute") then makefolder("../Autoexecute") end
         writefile(AUTOEXEC_FILE, AutoBox.Text)
     end)
 
@@ -354,7 +357,8 @@ AutoSave.MouseButton1Click:Connect(function()
         notify("File Created/Saved!", THEME.Green)
     else
         AutoSave.Text = "Error"
-        notify("Save Failed!", THEME.Red)
+        notify("Error: " .. tostring(err), THEME.Red)
+        warn("XuanHub AutoSave Error: ", err)
     end
     
     wait(1)
