@@ -63,11 +63,12 @@ if not ScreenGui.Parent then ScreenGui.Parent = game.Players.LocalPlayer:WaitFor
 
 -- Main Frame
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 440, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -220, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 400, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
 MainFrame.BackgroundColor3 = CARD_BG
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = false
+MainFrame.Active = true
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 16)
@@ -326,12 +327,13 @@ FloatingBtn.Size = UDim2.new(0, 70, 0, 70)
 FloatingBtn.Position = UDim2.new(1, -90, 1, -90)
 FloatingBtn.BackgroundColor3 = PINK_PRIMARY
 FloatingBtn.BorderSizePixel = 0
-FloatingBtn.Text = "Xuan"
+FloatingBtn.Text = "XuanHub"
 FloatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 FloatingBtn.Font = Enum.Font.GothamBold
-FloatingBtn.TextSize = 16
+FloatingBtn.TextSize = 14
 FloatingBtn.Visible = false
 FloatingBtn.AutoButtonColor = false
+FloatingBtn.TextWrapped = true
 
 local floatCorner = Instance.new("UICorner")
 floatCorner.CornerRadius = UDim.new(1, 0)
@@ -662,12 +664,10 @@ local minimized = false
 local function toggleMinimize()
     minimized = not minimized
     if minimized then
-        MainFrame.Size = UDim2.new(0, 440, 0, 50)
-        MinimizeBtn.Text = "□"
+        MainFrame.Visible = false
         FloatingBtn.Visible = true
     else
-        MainFrame.Size = UDim2.new(0, 440, 0, 400)
-        MinimizeBtn.Text = "—"
+        MainFrame.Visible = true
         FloatingBtn.Visible = false
     end
 end
@@ -691,11 +691,11 @@ ScreenGui.InputBegan:Connect(function(input)
     end
 end)
 
--- DRAGGING
+-- DRAGGING (Entire Frame)
 local dragging = false
 local dragStart, startPos
 
-TitleBar.InputBegan:Connect(function(input)
+MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
@@ -703,7 +703,7 @@ TitleBar.InputBegan:Connect(function(input)
     end
 end)
 
-TitleBar.InputEnded:Connect(function(input)
+MainFrame.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
