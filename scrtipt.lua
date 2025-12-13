@@ -6,13 +6,18 @@ local TweenService = game:GetService("TweenService")
 -- File System Setup
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
-local AUTOEXEC_FOLDER = "Autoexecute"
-local AUTOEXEC_FILE = AUTOEXEC_FOLDER .. "/autoexecute.txt"
+-- Attempt to access the executor's actual Autoexecute folder (outside workspace)
+local AUTOEXEC_FILE = "../Autoexecute/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
-if not isfolder(AUTOEXEC_FOLDER) then makefolder(AUTOEXEC_FOLDER) end
-if not isfile(AUTOEXEC_FILE) then writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')") end
+
+-- Safely attempt to init autoexec file
+pcall(function()
+    if not isfile(AUTOEXEC_FILE) then 
+        writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')") 
+    end
+end)
 
 -- UI Constants
 local THEME = {
@@ -304,7 +309,8 @@ AutoBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoBox.ClearTextOnFocus = false
 AutoBox.MultiLine = true
 AutoBox.TextWrapped = true -- Fix overflow
-AutoBox.Text = readfile(AUTOEXEC_FILE)
+local success, content = pcall(readfile, AUTOEXEC_FILE)
+AutoBox.Text = success and content or "-- Auto Execute Script (File not found or not accessible)"
 AutoBox.Parent = AutoExecPage
 
 local AutoPadding = Instance.new("UIPadding")
@@ -449,12 +455,14 @@ end
 createControlBtn("▶", THEME.Green, 0, function()
     if ScriptEditor.Text ~= "" then
         loadstring(ScriptEditor.Text)()
+        notify("Run Successful!", THEME.Green)
     end
 end)
 
 createControlBtn("💾", THEME.Accent, 0.20, function()
     if CurrentScriptFile then
         writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+        notify("Saved Successfully!", THEME.Accent)
     end
 end)
 
@@ -468,6 +476,7 @@ createControlBtn("✏️", THEME.Sidebar, 0.40, function()
             delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
             CurrentScriptFile = newName
             refreshScripts()
+            notify("Renamed Successfully!", THEME.Sidebar)
         end
     end
 end)
@@ -480,6 +489,7 @@ createControlBtn("📄", THEME.Sidebar, 0.60, function()
     FileNameBox.Text = name
     writefile(SCRIPTS_DIR .. "/" .. name, "")
     refreshScripts()
+    notify("New File Created!", THEME.Sidebar)
 end)
 
 createControlBtn("🗑", THEME.Red, 0.80, function()
@@ -489,6 +499,7 @@ createControlBtn("🗑", THEME.Red, 0.80, function()
         ScriptEditor.Text = ""
         FileNameBox.Text = "Script Name"
         refreshScripts()
+        notify("Deleted Successfully!", THEME.Red)
     end
 end)
 
