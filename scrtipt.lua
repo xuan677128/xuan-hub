@@ -404,6 +404,7 @@ end)
 local ThemeLabel = Instance.new("TextLabel")
 ThemeLabel.Size = UDim2.new(1, 0, 0, 30)
 ThemeLabel.BackgroundTransparency = 1
+ThemeLabel.Text = "Theme Color"
 ThemeLabel.TextColor3 = THEME.SubText
 ThemeLabel.Font = Enum.Font.GothamBold
 ThemeLabel.TextSize = 14
@@ -468,21 +469,17 @@ for _, colorData in ipairs(colors) do
     end)
 end
 
--- About Section
-local AboutLabel = Instance.new("TextLabel")
-AboutLabel.Size = UDim2.new(1, 0, 0, 30)
-AboutLabel.BackgroundTransparency = 1
-AboutLabel.Text = "About"
-AboutLabel.TextColor3 = THEME.SubText
-AboutLabel.Font = Enum.Font.GothamBold
-AboutLabel.TextSize = 14
-AboutLabel.TextXAlignment = Enum.TextXAlignment.Left
-AboutLabel.Parent = SettingsPage
+-- PAGE: About
+local AboutPage = Instance.new("Frame")
+AboutPage.Size = UDim2.new(1, 0, 1, 0)
+AboutPage.BackgroundTransparency = 1
+AboutPage.Visible = false
+AboutPage.Parent = Content
 
 local AboutContainer = Instance.new("Frame")
-AboutContainer.Size = UDim2.new(1, 0, 0, 130) -- Increased height for more info
+AboutContainer.Size = UDim2.new(1, 0, 0, 150)
 AboutContainer.BackgroundColor3 = THEME.Item
-AboutContainer.Parent = SettingsPage
+AboutContainer.Parent = AboutPage
 
 local AboutCorner = Instance.new("UICorner")
 AboutCorner.CornerRadius = UDim.new(0, 8)
@@ -495,7 +492,7 @@ AboutText.BackgroundTransparency = 1
 AboutText.Text = "XuanHub Remastered\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
 AboutText.TextColor3 = THEME.Text
 AboutText.Font = Enum.Font.Gotham
-AboutText.TextSize = 12
+AboutText.TextSize = 13
 AboutText.TextWrapped = true
 AboutText.TextXAlignment = Enum.TextXAlignment.Left
 AboutText.TextYAlignment = Enum.TextYAlignment.Top
@@ -698,6 +695,7 @@ end
 tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
 tabs["Scripts"] = { Button = createTabButton("Scripts", 1), Page = ScriptsPage }
 tabs["Settings"] = { Button = createTabButton("Settings", 2), Page = SettingsPage }
+tabs["About"] = { Button = createTabButton("About", 3), Page = AboutPage }
 
 -- Button Events
 tabs["AutoExec"].Button.MouseButton1Click:Connect(function() switchTab("AutoExec") end)
@@ -706,7 +704,7 @@ tabs["Scripts"].Button.MouseButton1Click:Connect(function()
     refreshScripts()
 end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
+tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
 -- Init
 switchTab("AutoExec")
-
