@@ -7,7 +7,7 @@ local TweenService = game:GetService("TweenService")
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
 -- Attempt to access the executor's actual Autoexecute folder (outside workspace)
-local AUTOEXEC_FILE = "../Autoexecute/autoexecute.txt"
+local AUTOEXEC_FILE = "../Delta/Autoexecute/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
@@ -15,7 +15,8 @@ if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 -- Safely attempt to init autoexec file
 pcall(function()
     if not isfile(AUTOEXEC_FILE) then 
-        writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')") 
+        writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')")
+        print("Created autoexec file at " .. AUTOEXEC_FILE)
     end
 end)
 
