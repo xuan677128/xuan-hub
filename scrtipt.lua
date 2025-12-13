@@ -1,4 +1,4 @@
--- Xuan Hub - Modern Sidebar UI
+-- Xuan Hub - Modern Sidebar UI (Remastered)
 -- Services
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -7,7 +7,7 @@ local TweenService = game:GetService("TweenService")
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
 local AUTOEXEC_FILE = ROOT .. "/autoexec.txt"
-local LEGACY_AUTOEXEC = "autoexec.txt" -- For compatibility
+local LEGACY_AUTOEXEC = "autoexec.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
@@ -15,13 +15,16 @@ if not isfile(AUTOEXEC_FILE) then writefile(AUTOEXEC_FILE, "-- Auto Execute Scri
 
 -- UI Constants
 local THEME = {
-    Background = Color3.fromRGB(20, 20, 20),
-    Sidebar = Color3.fromRGB(30, 30, 30),
-    Item = Color3.fromRGB(40, 40, 40),
+    Background = Color3.fromRGB(15, 15, 20),
+    Sidebar = Color3.fromRGB(25, 25, 30),
+    Item = Color3.fromRGB(35, 35, 40),
     Text = Color3.fromRGB(240, 240, 240),
+    SubText = Color3.fromRGB(150, 150, 150),
     Accent = Color3.fromRGB(236, 72, 153), -- Pink
-    Red = Color3.fromRGB(220, 50, 50),
-    Green = Color3.fromRGB(50, 200, 100)
+    Hover = Color3.fromRGB(255, 100, 180),
+    Red = Color3.fromRGB(220, 60, 60),
+    Green = Color3.fromRGB(60, 200, 110),
+    Stroke = Color3.fromRGB(50, 50, 60)
 }
 
 -- Main GUI
@@ -29,34 +32,39 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XuanHubUI"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Main Window
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 600, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 650, 0, 420) -- Slightly larger
+MainFrame.Position = UDim2.new(0.5, -325, 0.5, -210)
 MainFrame.BackgroundColor3 = THEME.Background
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = THEME.Stroke
+UIStroke.Thickness = 1
+UIStroke.Parent = MainFrame
 
 -- Header (Draggable)
 local Header = Instance.new("Frame")
 Header.Name = "Header"
-Header.Size = UDim2.new(1, 0, 0, 40)
+Header.Size = UDim2.new(1, 0, 0, 45)
 Header.BackgroundColor3 = THEME.Sidebar
 Header.BorderSizePixel = 0
 Header.Parent = MainFrame
 
 local HeaderCorner = Instance.new("UICorner")
-HeaderCorner.CornerRadius = UDim.new(0, 8)
+HeaderCorner.CornerRadius = UDim.new(0, 10)
 HeaderCorner.Parent = Header
 
--- Fix bottom corners of header to be square
-local HeaderCover = Instance.new("Frame")
+local HeaderCover = Instance.new("Frame") -- Square off bottom
 HeaderCover.Size = UDim2.new(1, 0, 0, 10)
 HeaderCover.Position = UDim2.new(0, 0, 1, -10)
 HeaderCover.BackgroundColor3 = THEME.Sidebar
@@ -66,38 +74,38 @@ HeaderCover.Parent = Header
 local Title = Instance.new("TextLabel")
 Title.Text = "XuanHub"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
+Title.TextSize = 20
 Title.TextColor3 = THEME.Accent
 Title.Size = UDim2.new(0, 200, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "-"
-CloseBtn.Size = UDim2.new(0, 40, 1, 0)
-CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+CloseBtn.Size = UDim2.new(0, 45, 1, 0)
+CloseBtn.Position = UDim2.new(1, -45, 0, 0)
 CloseBtn.BackgroundTransparency = 1
-CloseBtn.TextColor3 = THEME.Text
+CloseBtn.TextColor3 = THEME.SubText
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 20
+CloseBtn.TextSize = 24
 CloseBtn.Parent = Header
 
 -- Sidebar
 local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
-Sidebar.Size = UDim2.new(0, 150, 1, -40)
-Sidebar.Position = UDim2.new(0, 0, 0, 40)
+Sidebar.Size = UDim2.new(0, 160, 1, -45)
+Sidebar.Position = UDim2.new(0, 0, 0, 45)
 Sidebar.BackgroundColor3 = THEME.Sidebar
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = MainFrame
 
 local SidebarCorner = Instance.new("UICorner")
-SidebarCorner.CornerRadius = UDim.new(0, 8)
+SidebarCorner.CornerRadius = UDim.new(0, 10)
 SidebarCorner.Parent = Sidebar
 
-local SidebarCover = Instance.new("Frame")
+local SidebarCover = Instance.new("Frame") -- Square off right
 SidebarCover.Size = UDim2.new(0, 10, 1, 0)
 SidebarCover.Position = UDim2.new(1, -10, 0, 0)
 SidebarCover.BackgroundColor3 = THEME.Sidebar
@@ -107,8 +115,8 @@ SidebarCover.Parent = Sidebar
 -- Content Area
 local Content = Instance.new("Frame")
 Content.Name = "Content"
-Content.Size = UDim2.new(1, -160, 1, -50)
-Content.Position = UDim2.new(0, 155, 0, 45)
+Content.Size = UDim2.new(1, -170, 1, -55)
+Content.Position = UDim2.new(0, 165, 0, 50)
 Content.BackgroundColor3 = THEME.Background
 Content.BackgroundTransparency = 1
 Content.Parent = MainFrame
@@ -127,12 +135,18 @@ FloatingBtn.Visible = false
 FloatingBtn.Parent = ScreenGui
 
 local FloatCorner = Instance.new("UICorner")
-FloatCorner.CornerRadius = UDim.new(1, 0)
+FloatCorner.CornerRadius = UDim.new(1, 0) -- Circle
 FloatCorner.Parent = FloatingBtn
 
--- Dragging Logic
+local FloatStroke = Instance.new("UIStroke")
+FloatStroke.Color = THEME.Accent
+FloatStroke.Thickness = 2
+FloatStroke.Parent = FloatingBtn
+
+-- Dragging Logic (Robust)
 local function makeDraggable(obj, dragHandle)
     local dragging, dragInput, dragStart, startPos
+    
     dragHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
@@ -140,13 +154,20 @@ local function makeDraggable(obj, dragHandle)
             startPos = obj.Position
         end
     end)
+    
     dragHandle.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
     end)
+    
     UIS.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            obj.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
         end
     end)
 end
@@ -161,6 +182,7 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 FloatingBtn.MouseButton1Click:Connect(function()
+    -- Check if it was a click or a drag (simple check: if mouse didn't move much)
     MainFrame.Visible = true
     FloatingBtn.Visible = false
 end)
@@ -169,21 +191,22 @@ end)
 local currentTab = nil
 local tabs = {}
 
-local function createTabButton(name, icon, order)
+local function createTabButton(name, order)
     local btn = Instance.new("TextButton")
     btn.Name = name
-    btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.Position = UDim2.new(0, 10, 0, 10 + (order * 40))
-    btn.BackgroundColor3 = THEME.Background
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, 10 + (order * 45))
+    btn.BackgroundColor3 = THEME.Sidebar
+    btn.BackgroundTransparency = 1
     btn.Text = "  " .. name
-    btn.TextColor3 = THEME.Text
-    btn.Font = Enum.Font.Gotham
+    btn.TextColor3 = THEME.SubText
+    btn.Font = Enum.Font.GothamMedium
     btn.TextSize = 14
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = Sidebar
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
     
     return btn
@@ -191,15 +214,13 @@ end
 
 local function switchTab(name)
     if currentTab then
-        currentTab.Button.BackgroundColor3 = THEME.Background
-        currentTab.Button.TextColor3 = THEME.Text
+        TweenService:Create(currentTab.Button, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextColor3 = THEME.SubText}):Play()
         currentTab.Page.Visible = false
     end
     
     local newTab = tabs[name]
     if newTab then
-        newTab.Button.BackgroundColor3 = THEME.Accent
-        newTab.Button.TextColor3 = Color3.new(1,1,1)
+        TweenService:Create(newTab.Button, TweenInfo.new(0.2), {BackgroundTransparency = 0, BackgroundColor3 = THEME.Item, TextColor3 = THEME.Accent}):Play()
         newTab.Page.Visible = true
         currentTab = newTab
     end
@@ -213,11 +234,11 @@ AutoExecPage.Visible = false
 AutoExecPage.Parent = Content
 
 local AutoBox = Instance.new("TextBox")
-AutoBox.Size = UDim2.new(1, 0, 1, -40)
+AutoBox.Size = UDim2.new(1, 0, 1, -45)
 AutoBox.BackgroundColor3 = THEME.Item
 AutoBox.TextColor3 = THEME.Text
 AutoBox.Font = Enum.Font.Code
-AutoBox.TextSize = 14
+AutoBox.TextSize = 13
 AutoBox.TextXAlignment = Enum.TextXAlignment.Left
 AutoBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoBox.ClearTextOnFocus = false
@@ -226,29 +247,29 @@ AutoBox.Text = readfile(AUTOEXEC_FILE)
 AutoBox.Parent = AutoExecPage
 
 local AutoCorner = Instance.new("UICorner")
-AutoCorner.CornerRadius = UDim.new(0, 6)
+AutoCorner.CornerRadius = UDim.new(0, 8)
 AutoCorner.Parent = AutoBox
 
 local AutoSave = Instance.new("TextButton")
-AutoSave.Size = UDim2.new(0, 100, 0, 30)
-AutoSave.Position = UDim2.new(0, 0, 1, -30)
+AutoSave.Size = UDim2.new(0, 120, 0, 35)
+AutoSave.Position = UDim2.new(1, -120, 1, -35)
 AutoSave.BackgroundColor3 = THEME.Accent
-AutoSave.Text = "Save"
+AutoSave.Text = "Save AutoExec"
 AutoSave.TextColor3 = Color3.new(1,1,1)
 AutoSave.Font = Enum.Font.GothamBold
 AutoSave.TextSize = 14
 AutoSave.Parent = AutoExecPage
 
 local AutoSaveCorner = Instance.new("UICorner")
-AutoSaveCorner.CornerRadius = UDim.new(0, 6)
+AutoSaveCorner.CornerRadius = UDim.new(0, 8)
 AutoSaveCorner.Parent = AutoSave
 
 AutoSave.MouseButton1Click:Connect(function()
     writefile(AUTOEXEC_FILE, AutoBox.Text)
-    writefile(LEGACY_AUTOEXEC, AutoBox.Text) -- Sync with legacy
+    writefile(LEGACY_AUTOEXEC, AutoBox.Text)
     AutoSave.Text = "Saved!"
     wait(1)
-    AutoSave.Text = "Save"
+    AutoSave.Text = "Save AutoExec"
 end)
 
 -- PAGE: Scripts
@@ -258,43 +279,61 @@ ScriptsPage.BackgroundTransparency = 1
 ScriptsPage.Visible = false
 ScriptsPage.Parent = Content
 
+-- Script List (Left Side of Content)
+local ListContainer = Instance.new("Frame")
+ListContainer.Size = UDim2.new(0, 180, 1, 0)
+ListContainer.BackgroundColor3 = THEME.Item
+ListContainer.Parent = ScriptsPage
+
+local ListCorner = Instance.new("UICorner")
+ListCorner.CornerRadius = UDim.new(0, 8)
+ListCorner.Parent = ListContainer
+
 local ScriptList = Instance.new("ScrollingFrame")
-ScriptList.Size = UDim2.new(0, 180, 1, 0)
-ScriptList.BackgroundColor3 = THEME.Item
-ScriptList.ScrollBarThickness = 4
-ScriptList.Parent = ScriptsPage
+ScriptList.Size = UDim2.new(1, -10, 1, -10)
+ScriptList.Position = UDim2.new(0, 5, 0, 5)
+ScriptList.BackgroundTransparency = 1
+ScriptList.ScrollBarThickness = 2
+ScriptList.Parent = ListContainer
 
 local ListLayout = Instance.new("UIListLayout")
 ListLayout.Padding = UDim.new(0, 5)
 ListLayout.Parent = ScriptList
 
+-- Editor Area (Right Side of Content)
+local EditorContainer = Instance.new("Frame")
+EditorContainer.Size = UDim2.new(1, -190, 1, 0)
+EditorContainer.Position = UDim2.new(0, 190, 0, 0)
+EditorContainer.BackgroundTransparency = 1
+EditorContainer.Parent = ScriptsPage
+
 local ScriptEditor = Instance.new("TextBox")
-ScriptEditor.Size = UDim2.new(1, -190, 1, -40)
-ScriptEditor.Position = UDim2.new(0, 190, 0, 0)
+ScriptEditor.Size = UDim2.new(1, 0, 1, -45)
 ScriptEditor.BackgroundColor3 = THEME.Item
 ScriptEditor.TextColor3 = THEME.Text
 ScriptEditor.Font = Enum.Font.Code
-ScriptEditor.TextSize = 14
+ScriptEditor.TextSize = 13
 ScriptEditor.TextXAlignment = Enum.TextXAlignment.Left
 ScriptEditor.TextYAlignment = Enum.TextYAlignment.Top
 ScriptEditor.ClearTextOnFocus = false
 ScriptEditor.MultiLine = true
 ScriptEditor.Text = "-- Select a script to edit"
-ScriptEditor.Parent = ScriptsPage
+ScriptEditor.Parent = EditorContainer
 
 local EditorCorner = Instance.new("UICorner")
-EditorCorner.CornerRadius = UDim.new(0, 6)
+EditorCorner.CornerRadius = UDim.new(0, 8)
 EditorCorner.Parent = ScriptEditor
+
+-- Controls (Bottom of Editor)
+local Controls = Instance.new("Frame")
+Controls.Size = UDim2.new(1, 0, 0, 35)
+Controls.Position = UDim2.new(0, 0, 1, -35)
+Controls.BackgroundTransparency = 1
+Controls.Parent = EditorContainer
 
 local CurrentScriptFile = nil
 
-local ScriptControls = Instance.new("Frame")
-ScriptControls.Size = UDim2.new(1, -190, 0, 30)
-ScriptControls.Position = UDim2.new(0, 190, 1, -30)
-ScriptControls.BackgroundTransparency = 1
-ScriptControls.Parent = ScriptsPage
-
-local function createScriptBtn(text, color, order, callback)
+local function createControlBtn(text, color, posScale, callback)
     local btn = Instance.new("TextButton")
     btn.Text = text
     btn.BackgroundColor3 = color
@@ -302,8 +341,8 @@ local function createScriptBtn(text, color, order, callback)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 12
     btn.Size = UDim2.new(0.23, 0, 1, 0)
-    btn.Position = UDim2.new(0.25 * order, 0, 0, 0)
-    btn.Parent = ScriptControls
+    btn.Position = UDim2.new(posScale, 0, 0, 0)
+    btn.Parent = Controls
     
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 6)
@@ -313,31 +352,29 @@ local function createScriptBtn(text, color, order, callback)
     return btn
 end
 
-createScriptBtn("Run", THEME.Green, 0, function()
+-- Buttons: Run, Save, New, Delete
+createControlBtn("▶ Run", THEME.Green, 0, function()
     if ScriptEditor.Text ~= "" then
         loadstring(ScriptEditor.Text)()
     end
 end)
 
-createScriptBtn("Save", THEME.Accent, 1, function()
+createControlBtn("💾 Save", THEME.Accent, 0.25, function()
     if CurrentScriptFile then
         writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
-    else
-        -- New file logic could go here
     end
 end)
 
-createScriptBtn("New", THEME.Sidebar, 2, function()
+createControlBtn("📄 New", THEME.Sidebar, 0.50, function()
     CurrentScriptFile = nil
     ScriptEditor.Text = ""
-    -- Simple input for name
     local name = "Script_" .. math.random(1000) .. ".lua"
     CurrentScriptFile = name
     writefile(SCRIPTS_DIR .. "/" .. name, "")
     refreshScripts()
 end)
 
-createScriptBtn("Delete", THEME.Red, 3, function()
+createControlBtn("🗑 Delete", THEME.Red, 0.75, function()
     if CurrentScriptFile then
         delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
         CurrentScriptFile = nil
@@ -355,7 +392,7 @@ function refreshScripts()
     for _, file in pairs(files) do
         local name = file:match("([^/]+)$")
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -10, 0, 30)
+        btn.Size = UDim2.new(1, 0, 0, 30)
         btn.BackgroundColor3 = THEME.Sidebar
         btn.Text = name
         btn.TextColor3 = THEME.Text
@@ -370,14 +407,19 @@ function refreshScripts()
         btn.MouseButton1Click:Connect(function()
             CurrentScriptFile = name
             ScriptEditor.Text = readfile(file)
+            -- Highlight selection
+            for _, b in pairs(ScriptList:GetChildren()) do
+                if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+            end
+            btn.BackgroundColor3 = THEME.Accent
         end)
     end
     ScriptList.CanvasSize = UDim2.new(0, 0, 0, #files * 35)
 end
 
 -- Register Tabs
-tabs["AutoExec"] = { Button = createTabButton("AutoExec", "", 0), Page = AutoExecPage }
-tabs["Scripts"] = { Button = createTabButton("Scripts", "", 1), Page = ScriptsPage }
+tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
+tabs["Scripts"] = { Button = createTabButton("Scripts", 1), Page = ScriptsPage }
 
 -- Button Events
 tabs["AutoExec"].Button.MouseButton1Click:Connect(function() switchTab("AutoExec") end)
