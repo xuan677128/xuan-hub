@@ -14,7 +14,7 @@ if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 
 if not isfile(AUTOEXEC_FILE) then 
-    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads it will automatically run the script") 
+    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')") 
 end
 
 -- Internal Auto Execution
@@ -329,6 +329,25 @@ local AutoCorner = Instance.new("UICorner")
 AutoCorner.CornerRadius = UDim.new(0, 8)
 AutoCorner.Parent = AutoBox
 
+local AutoClear = Instance.new("TextButton")
+AutoClear.Size = UDim2.new(0, 120, 0, 35)
+AutoClear.Position = UDim2.new(1, -250, 1, -35)
+AutoClear.BackgroundColor3 = THEME.Sidebar
+AutoClear.Text = "Clear"
+AutoClear.TextColor3 = THEME.Text
+AutoClear.Font = Enum.Font.GothamBold
+AutoClear.TextSize = 14
+AutoClear.Parent = AutoExecPage
+
+local AutoClearCorner = Instance.new("UICorner")
+AutoClearCorner.CornerRadius = UDim.new(0, 8)
+AutoClearCorner.Parent = AutoClear
+
+AutoClear.MouseButton1Click:Connect(function()
+    AutoBox.Text = ""
+    notify("Cleared!", THEME.Sidebar)
+end)
+
 local AutoSave = Instance.new("TextButton")
 AutoSave.Size = UDim2.new(0, 120, 0, 35)
 AutoSave.Position = UDim2.new(1, -120, 1, -35)
@@ -385,6 +404,7 @@ end)
 local ThemeLabel = Instance.new("TextLabel")
 ThemeLabel.Size = UDim2.new(1, 0, 0, 30)
 ThemeLabel.BackgroundTransparency = 1
+ThemeLabel.Text = "Theme Color"
 ThemeLabel.TextColor3 = THEME.SubText
 ThemeLabel.Font = Enum.Font.GothamBold
 ThemeLabel.TextSize = 14
@@ -657,5 +677,3 @@ tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings
 
 -- Init
 switchTab("AutoExec")
-
-
