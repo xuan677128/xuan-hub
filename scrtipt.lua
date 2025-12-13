@@ -697,6 +697,19 @@ FloatingBtn.InputBegan:Connect(function(input)
     end
 end)
 
+local minimized = false
+
+local function toggleMinimize()
+    minimized = not minimized
+    if minimized then
+        MainFrame.Visible = false
+        FloatingBtn.Visible = true
+    else
+        MainFrame.Visible = true
+        FloatingBtn.Visible = false
+    end
+end
+
 FloatingBtn.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         if floatDragging then
@@ -723,19 +736,6 @@ UIS.InputChanged:Connect(function(input)
         )
     end
 end)
-
-local minimized = false
-
-local function toggleMinimize()
-    minimized = not minimized
-    if minimized then
-        MainFrame.Visible = false
-        FloatingBtn.Visible = true
-    else
-        MainFrame.Visible = true
-        FloatingBtn.Visible = false
-    end
-end
 
 MinimizeBtn.MouseButton1Click:Connect(function()
     toggleMinimize()
