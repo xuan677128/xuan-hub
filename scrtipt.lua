@@ -54,6 +54,34 @@ UIStroke.Color = THEME.Stroke
 UIStroke.Thickness = 1
 UIStroke.Parent = MainFrame
 
+-- Notification System
+local Notification = Instance.new("TextLabel")
+Notification.Name = "Notification"
+Notification.Size = UDim2.new(0, 200, 0, 30)
+Notification.Position = UDim2.new(0.5, -100, 0.85, 0)
+Notification.BackgroundColor3 = THEME.Sidebar
+Notification.TextColor3 = THEME.Text
+Notification.Font = Enum.Font.GothamBold
+Notification.TextSize = 12
+Notification.Text = "Notification"
+Notification.Visible = false
+Notification.ZIndex = 100
+Notification.Parent = MainFrame
+
+local NotifCorner = Instance.new("UICorner")
+NotifCorner.CornerRadius = UDim.new(0, 6)
+NotifCorner.Parent = Notification
+
+local function notify(text, color)
+    spawn(function()
+        Notification.Text = text
+        Notification.TextColor3 = color
+        Notification.Visible = true
+        wait(2)
+        Notification.Visible = false
+    end)
+end
+
 -- Header (Draggable)
 local Header = Instance.new("Frame")
 Header.Name = "Header"
