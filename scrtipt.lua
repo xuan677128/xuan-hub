@@ -28,6 +28,15 @@ local function tryInstance(className)
     return instance
 end
 
+local function setSafe(object, property, value)
+    local ok, err = pcall(function()
+        object[property] = value
+    end)
+    if not ok then
+        warn("Failed to set", property, "on", object.ClassName, ":", err)
+    end
+end
+
 -- GUI
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
@@ -115,20 +124,22 @@ local minimizedSize = UDim2.new(Frame.Size.X.Scale, Frame.Size.X.Offset, 0, 40)
 -- TITLE BAR (DRAG HANDLE)
 TitleBar.Parent = Frame
 TitleBar.Size = UDim2.new(1, 0, 0, 40)
-TitleBar.Text = "🌸 Xuan Hub — AutoExecute Manager"
-TitleBar.TextColor3 = TEXT_PRIMARY
-TitleBar.BackgroundColor3 = Color3.fromRGB(96, 24, 82)
-TitleBar.BackgroundTransparency = 0.1
-TitleBar.Font = Enum.Font.GothamBold
-TitleBar.TextSize = 18
-TitleBar.BorderSizePixel = 0
-TitleBar.TextXAlignment = Enum.TextXAlignment.Left
-TitleBar.TextStrokeColor3 = STROKE_COLOR
-TitleBar.TextStrokeTransparency = 0.7
+setSafe(TitleBar, "Text", "🌸 Xuan Hub — AutoExecute Manager")
+setSafe(TitleBar, "TextColor3", TEXT_PRIMARY)
+setSafe(TitleBar, "BackgroundColor3", Color3.fromRGB(96, 24, 82))
+setSafe(TitleBar, "BackgroundTransparency", 0.1)
+setSafe(TitleBar, "Font", Enum.Font.GothamBold)
+setSafe(TitleBar, "TextSize", 18)
+setSafe(TitleBar, "BorderSizePixel", 0)
+setSafe(TitleBar, "TextXAlignment", Enum.TextXAlignment.Left)
+setSafe(TitleBar, "TextStrokeColor3", STROKE_COLOR)
+setSafe(TitleBar, "TextStrokeTransparency", 0.7)
 TitleBar.ZIndex = 2
-local titlePadding = Instance.new("UIPadding")
-titlePadding.PaddingLeft = UDim.new(0, 16)
-titlePadding.Parent = TitleBar
+local titlePadding = tryInstance("UIPadding")
+if titlePadding then
+    titlePadding.PaddingLeft = UDim.new(0, 16)
+    titlePadding.Parent = TitleBar
+end
 
 -- TEXTBOX
 Box.Parent = Frame
@@ -139,15 +150,15 @@ Box.ClearTextOnFocus = false
 Box.TextWrapped = true
 Box.TextYAlignment = Enum.TextYAlignment.Top
 Box.Font = Enum.Font.Code
-Box.TextSize = 15
-Box.LineHeight = 1.25
-Box.Text = ""
-Box.BackgroundColor3 = Color3.fromRGB(54, 12, 46)
-Box.TextColor3 = TEXT_PRIMARY
-Box.PlaceholderText = "-- Paste your script here"
-Box.PlaceholderColor3 = TEXT_SECONDARY
-Box.TextXAlignment = Enum.TextXAlignment.Left
-Box.TextStrokeTransparency = 0.9
+setSafe(Box, "TextSize", 15)
+setSafe(Box, "LineHeight", 1.25)
+setSafe(Box, "Text", "")
+setSafe(Box, "BackgroundColor3", Color3.fromRGB(54, 12, 46))
+setSafe(Box, "TextColor3", TEXT_PRIMARY)
+setSafe(Box, "PlaceholderText", "-- Paste your script here")
+setSafe(Box, "PlaceholderColor3", TEXT_SECONDARY)
+setSafe(Box, "TextXAlignment", Enum.TextXAlignment.Left)
+setSafe(Box, "TextStrokeTransparency", 0.9)
 local boxCorner = tryInstance("UICorner")
 if boxCorner then
     boxCorner.CornerRadius = UDim.new(0, 10)
@@ -166,55 +177,55 @@ end
 Save.Parent = Frame
 Save.Position = UDim2.new(0, 16, 0, 220)
 Save.Size = UDim2.new(0.5, -26, 0, 36)
-Save.Text = "💾 Save"
-Save.BackgroundColor3 = BUTTON_PRIMARY
-Save.TextColor3 = TEXT_PRIMARY
-Save.Font = Enum.Font.GothamSemibold
-Save.TextSize = 14
+setSafe(Save, "Text", "💾 Save")
+setSafe(Save, "BackgroundColor3", BUTTON_PRIMARY)
+setSafe(Save, "TextColor3", TEXT_PRIMARY)
+setSafe(Save, "Font", Enum.Font.GothamSemibold)
+setSafe(Save, "TextSize", 14)
 Save.AutoButtonColor = false
 
 Load.Parent = Frame
 Load.Position = UDim2.new(0.5, 10, 0, 220)
 Load.Size = UDim2.new(0.5, -26, 0, 36)
-Load.Text = "📂 Load Script"
-Load.BackgroundColor3 = BUTTON_SECONDARY
-Load.TextColor3 = TEXT_PRIMARY
-Load.Font = Enum.Font.GothamSemibold
-Load.TextSize = 14
+setSafe(Load, "Text", "📂 Load Script")
+setSafe(Load, "BackgroundColor3", BUTTON_SECONDARY)
+setSafe(Load, "TextColor3", TEXT_PRIMARY)
+setSafe(Load, "Font", Enum.Font.GothamSemibold)
+setSafe(Load, "TextSize", 14)
 Load.AutoButtonColor = false
 
 Clear.Parent = Frame
 Clear.Position = UDim2.new(0, 16, 0, 266)
 Clear.Size = UDim2.new(0.3, -6, 0, 32)
-Clear.Text = "🧹 Clear"
-Clear.BackgroundColor3 = BUTTON_NEUTRAL
-Clear.TextColor3 = TEXT_PRIMARY
-Clear.Font = Enum.Font.GothamSemibold
-Clear.TextSize = 13
+setSafe(Clear, "Text", "🧹 Clear")
+setSafe(Clear, "BackgroundColor3", BUTTON_NEUTRAL)
+setSafe(Clear, "TextColor3", TEXT_PRIMARY)
+setSafe(Clear, "Font", Enum.Font.GothamSemibold)
+setSafe(Clear, "TextSize", 13)
 Clear.AutoButtonColor = false
 
 Delete.Parent = Frame
 Delete.Position = UDim2.new(0.34, 6, 0, 266)
 Delete.Size = UDim2.new(0.3, -6, 0, 32)
-Delete.Text = "🗑 Delete"
-Delete.BackgroundColor3 = BUTTON_DANGER
-Delete.TextColor3 = TEXT_PRIMARY
-Delete.Font = Enum.Font.GothamSemibold
-Delete.TextSize = 13
+setSafe(Delete, "Text", "🗑 Delete")
+setSafe(Delete, "BackgroundColor3", BUTTON_DANGER)
+setSafe(Delete, "TextColor3", TEXT_PRIMARY)
+setSafe(Delete, "Font", Enum.Font.GothamSemibold)
+setSafe(Delete, "TextSize", 13)
 Delete.AutoButtonColor = false
 
 Status.Parent = Frame
 Status.Position = UDim2.new(0.65, 4, 0, 266)
 Status.Size = UDim2.new(0.34, -20, 0, 32)
-Status.BackgroundColor3 = Color3.fromRGB(62, 16, 52)
-Status.BackgroundTransparency = 0.25
-Status.BorderSizePixel = 0
-Status.Font = Enum.Font.GothamSemibold
-Status.TextSize = 13
-Status.TextColor3 = TEXT_SECONDARY
-Status.TextXAlignment = Enum.TextXAlignment.Center
-Status.TextYAlignment = Enum.TextYAlignment.Center
-Status.Text = "✨ Ready"
+setSafe(Status, "BackgroundColor3", Color3.fromRGB(62, 16, 52))
+setSafe(Status, "BackgroundTransparency", 0.25)
+setSafe(Status, "BorderSizePixel", 0)
+setSafe(Status, "Font", Enum.Font.GothamSemibold)
+setSafe(Status, "TextSize", 13)
+setSafe(Status, "TextColor3", TEXT_SECONDARY)
+setSafe(Status, "TextXAlignment", Enum.TextXAlignment.Center)
+setSafe(Status, "TextYAlignment", Enum.TextYAlignment.Center)
+setSafe(Status, "Text", "✨ Ready")
 Status.ZIndex = 2
 local statusCorner = tryInstance("UICorner")
 if statusCorner then
@@ -233,22 +244,22 @@ end
 Minimize.Parent = Frame
 Minimize.Size = UDim2.new(0, 28, 0, 24)
 Minimize.Position = UDim2.new(1, -80, 0, 8)
-Minimize.BackgroundColor3 = ICON_BUTTON_COLOR
-Minimize.TextColor3 = TEXT_PRIMARY
-Minimize.Font = Enum.Font.GothamBold
-Minimize.TextSize = 16
-Minimize.Text = "—"
+setSafe(Minimize, "BackgroundColor3", ICON_BUTTON_COLOR)
+setSafe(Minimize, "TextColor3", TEXT_PRIMARY)
+setSafe(Minimize, "Font", Enum.Font.GothamBold)
+setSafe(Minimize, "TextSize", 16)
+setSafe(Minimize, "Text", "—")
 Minimize.AutoButtonColor = false
 Minimize.ZIndex = 3
 
 Maximize.Parent = Frame
 Maximize.Size = UDim2.new(0, 28, 0, 24)
 Maximize.Position = UDim2.new(1, -44, 0, 8)
-Maximize.BackgroundColor3 = ICON_BUTTON_COLOR
-Maximize.TextColor3 = TEXT_PRIMARY
-Maximize.Font = Enum.Font.GothamBold
-Maximize.TextSize = 16
-Maximize.Text = "⬜"
+setSafe(Maximize, "BackgroundColor3", ICON_BUTTON_COLOR)
+setSafe(Maximize, "TextColor3", TEXT_PRIMARY)
+setSafe(Maximize, "Font", Enum.Font.GothamBold)
+setSafe(Maximize, "TextSize", 16)
+setSafe(Maximize, "Text", "⬜")
 Maximize.Visible = false
 Maximize.AutoButtonColor = false
 Maximize.ZIndex = 3
