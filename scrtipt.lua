@@ -5,13 +5,14 @@ if not writefile or not readfile then
     return
 end
 
-local SCRIPTS_FOLDER = "XuanHub/Scripts"
-local AUTOEXEC_FILE = "XuanHub/autoexec.txt"
+local SCRIPTS_FOLDER = "workspace/XuanHub/Scripts"
+local AUTOEXEC_FILE = "workspace/XuanHub/autoexec.txt"
 local UIS = game:GetService("UserInputService")
 
--- Ensure folder exists
+-- Ensure workspace folder exists (executor's persistent storage)
 pcall(function()
-    if not isfolder("XuanHub") then makefolder("XuanHub") end
+    if not isfolder("workspace") then makefolder("workspace") end
+    if not isfolder("workspace/XuanHub") then makefolder("workspace/XuanHub") end
     if not isfolder(SCRIPTS_FOLDER) then makefolder(SCRIPTS_FOLDER) end
 end)
 
@@ -383,10 +384,13 @@ local function getScriptFiles()
     local files = {}
     pcall(function()
         if isfolder and listfiles then
-            for _, filepath in pairs(listfiles(SCRIPTS_FOLDER)) do
-                local filename = filepath:match("([^/\\]+)$")
-                if filename:match("%.txt$") or filename:match("%.lua$") then
-                    table.insert(files, filename)
+            -- Scan workspace/XuanHub/Scripts folder (persistent storage)
+            if isfolder(SCRIPTS_FOLDER) then
+                for _, filepath in pairs(listfiles(SCRIPTS_FOLDER)) do
+                    local filename = filepath:match("([^/\\]+)$")
+                    if filename:match("%.txt$") or filename:match("%.lua$") then
+                        table.insert(files, filename)
+                    end
                 end
             end
         end
@@ -581,11 +585,12 @@ AutoExecSaveBtn.MouseButton1Click:Connect(function()
     end
     
     local success, err = pcall(function()
+        -- Save to workspace/XuanHub/autoexec.txt (persistent)
         writefile(AUTOEXEC_FILE, AutoExecBox.Text)
     end)
     
     if success then
-        Status.Text = "✅ AutoExec saved!"
+        Status.Text = "✅ AutoExec saved in workspace!"
     else
         Status.Text = "❌ Save failed"
         warn("Save error:", err)
@@ -777,6 +782,24 @@ UIS.InputChanged:Connect(function(input)
             startPos.Y.Scale,
             startPos.Y.Offset + delta.Y
         )
+    end
+end)
+
+-- Auto-execute on startup
+pcall(function()
+    if isfile(AUTOEXEC_FILE) then
+        local autoexecCode = readfile(AUTOEXEC_FILE)
+        if autoexecCode and autoexecCode ~= "" then
+            local success, err = pcall(function()
+                loadstring(autoexecCode)()
+            end)
+            if success then
+                Status.Text = "✅ Auto-executed on startup"
+            else
+                Status.Text = "❌ Auto-exec failed"
+                warn("Auto-execute error:", err)
+            end
+        end
     end
 end)
 
