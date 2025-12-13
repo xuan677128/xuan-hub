@@ -7,13 +7,17 @@ local TweenService = game:GetService("TweenService")
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
 -- Attempt to access the executor's actual Autoexecute folder (outside workspace)
-local AUTOEXEC_FILE = "../Delta/Autoexecute/autoexecute.txt"
+-- We use "../Autoexecute" because Delta's structure is usually Delta/Workspace and Delta/Autoexecute
+local AUTOEXEC_FILE = "../Autoexecute/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 
 -- Safely attempt to init autoexec file
 pcall(function()
+    -- Try to create the folder if it doesn't exist (might fail on some executors, hence pcall)
+    if not isfolder("../Autoexecute") then makefolder("../Autoexecute") end
+    
     if not isfile(AUTOEXEC_FILE) then 
         writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')")
         print("Created autoexec file at " .. AUTOEXEC_FILE)
