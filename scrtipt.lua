@@ -6,21 +6,21 @@ local TweenService = game:GetService("TweenService")
 -- File System Setup
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
--- Attempt to access the executor's actual Autoexecute folder (outside workspace)
--- We use "../Autoexecute" because Delta's structure is usually Delta/Workspace and Delta/Autoexecute
-local AUTOEXEC_FILE = "../Autoexecute/autoexecute.txt"
+local AUTOEXEC_DIR = ROOT .. "/Autoexecute"
+local AUTOEXEC_FILE = AUTOEXEC_DIR .. "/autoexecute.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
+if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 
--- Safely attempt to init autoexec file
+if not isfile(AUTOEXEC_FILE) then 
+    writefile(AUTOEXEC_FILE, "-- Put code here to run when XuanHub loads\nprint('Internal AutoExec Loaded')") 
+end
+
+-- Internal Auto Execution
 pcall(function()
-    -- Try to create the folder if it doesn't exist (might fail on some executors, hence pcall)
-    if not isfolder("../Autoexecute") then makefolder("../Autoexecute") end
-    
-    if not isfile(AUTOEXEC_FILE) then 
-        writefile(AUTOEXEC_FILE, "-- Auto Execute Script\nprint('XuanHub AutoExec Loaded')")
-        print("Created autoexec file at " .. AUTOEXEC_FILE)
+    if isfile(AUTOEXEC_FILE) then
+        loadstring(readfile(AUTOEXEC_FILE))()
     end
 end)
 
@@ -314,9 +314,8 @@ AutoBox.TextXAlignment = Enum.TextXAlignment.Left
 AutoBox.TextYAlignment = Enum.TextYAlignment.Top
 AutoBox.ClearTextOnFocus = false
 AutoBox.MultiLine = true
-AutoBox.TextWrapped = true -- Fix overflow
-local success, content = pcall(readfile, AUTOEXEC_FILE)
-AutoBox.Text = success and content or "-- Auto Execute Script (File not found or not accessible)"
+AutoBox.TextWrapped = true
+AutoBox.Text = readfile(AUTOEXEC_FILE)
 AutoBox.Parent = AutoExecPage
 
 local AutoPadding = Instance.new("UIPadding")
@@ -345,25 +344,111 @@ AutoSaveCorner.CornerRadius = UDim.new(0, 8)
 AutoSaveCorner.Parent = AutoSave
 
 AutoSave.MouseButton1Click:Connect(function()
-    -- Use pcall to safely attempt writing (creates file if missing)
-    local success, err = pcall(function()
-        -- Try to ensure directory exists
-        if not isfolder("../Autoexecute") then makefolder("../Autoexecute") end
-        writefile(AUTOEXEC_FILE, AutoBox.Text)
-    end)
-
-    if success then
-        AutoSave.Text = "Saved!"
-        notify("File Created/Saved!", THEME.Green)
-    else
-        AutoSave.Text = "Error"
-        notify("Error: " .. tostring(err), THEME.Red)
-        warn("XuanHub AutoSave Error: ", err)
-    end
-    
+    writefile(AUTOEXEC_FILE, AutoBox.Text)
+    AutoSave.Text = "Saved!"
+    notify("AutoExec Saved!", THEME.Green)
     wait(1)
     AutoSave.Text = "Save AutoExec"
 end)
+
+-- PAGE: Settings
+local SettingsPage = Instance.new("Frame")
+SettingsPage.Size = UDim2.new(1, 0, 1, 0)
+SettingsPage.BackgroundTransparency = 1
+SettingsPage.Visible = false
+SettingsPage.Parent = Content
+
+local SettingsList = Instance.new("UIListLayout")
+SettingsList.Padding = UDim.new(0, 10)
+SettingsList.Parent = SettingsPage
+
+-- Discord Section
+local DiscordBtn = Instance.new("TextButton")
+DiscordBtn.Size = UDim2.new(1, 0, 0, 40)
+DiscordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord Blurple
+DiscordBtn.Text = "Join Discord Server"
+DiscordBtn.TextColor3 = Color3.new(1,1,1)
+DiscordBtn.Font = Enum.Font.GothamBold
+DiscordBtn.TextSize = 14
+DiscordBtn.Parent = SettingsPage
+
+local DiscordCorner = Instance.new("UICorner")
+DiscordCorner.CornerRadius = UDim.new(0, 8)
+DiscordCorner.Parent = DiscordBtn
+
+DiscordBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/kaydensdens")
+    notify("Link Copied to Clipboard!", Color3.fromRGB(88, 101, 242))
+end)
+
+-- Theme Section
+local ThemeLabel = Instance.new("TextLabel")
+ThemeLabel.Size = UDim2.new(1, 0, 0, 30)
+ThemeLabel.BackgroundTransparency = 1
+ThemeLabel.Text = "Theme Color"
+ThemeLabel.TextColor3 = THEME.SubText
+ThemeLabel.Font = Enum.Font.GothamBold
+ThemeLabel.TextSize = 14
+ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
+ThemeLabel.Parent = SettingsPage
+
+local ColorContainer = Instance.new("Frame")
+ColorContainer.Size = UDim2.new(1, 0, 0, 40)
+ColorContainer.BackgroundTransparency = 1
+ColorContainer.Parent = SettingsPage
+
+local ColorLayout = Instance.new("UIListLayout")
+ColorLayout.FillDirection = Enum.FillDirection.Horizontal
+ColorLayout.Padding = UDim.new(0, 10)
+ColorLayout.Parent = ColorContainer
+
+local colors = {
+    {Color3.fromRGB(236, 72, 153), "Pink"},
+    {Color3.fromRGB(60, 200, 110), "Green"},
+    {Color3.fromRGB(88, 101, 242), "Blue"},
+    {Color3.fromRGB(220, 60, 60), "Red"},
+    {Color3.fromRGB(255, 170, 0), "Orange"},
+    {Color3.fromRGB(170, 0, 255), "Purple"}
+}
+
+local function updateAccent(newColor)
+    THEME.Accent = newColor
+    Title.TextColor3 = newColor
+    FloatingBtn.TextColor3 = newColor
+    FloatStroke.Color = newColor
+    FileNameBox.TextColor3 = newColor
+    
+    -- Update active tab color if needed
+    if currentTab then
+        currentTab.Button.TextColor3 = newColor
+    end
+    
+    -- Update Save Button (It's the 2nd button in Controls)
+    -- We need to find it dynamically or store it. 
+    -- Since we know the order, we can iterate.
+    for _, btn in pairs(Controls:GetChildren()) do
+        if btn:IsA("TextButton") and btn.Text == "💾" then
+            btn.BackgroundColor3 = newColor
+        end
+    end
+end
+
+for _, colorData in ipairs(colors) do
+    local colorBtn = Instance.new("TextButton")
+    colorBtn.Size = UDim2.new(0, 30, 0, 30)
+    colorBtn.BackgroundColor3 = colorData[1]
+    colorBtn.Text = ""
+    colorBtn.Parent = ColorContainer
+    
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(1, 0)
+    c.Parent = colorBtn
+    
+    colorBtn.MouseButton1Click:Connect(function()
+        updateAccent(colorData[1])
+        notify("Theme Changed: " .. colorData[2], colorData[1])
+    end)
+end
 
 -- PAGE: Scripts
 local ScriptsPage = Instance.new("Frame")
@@ -561,6 +646,7 @@ end
 -- Register Tabs
 tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
 tabs["Scripts"] = { Button = createTabButton("Scripts", 1), Page = ScriptsPage }
+tabs["Settings"] = { Button = createTabButton("Settings", 2), Page = SettingsPage }
 
 -- Button Events
 tabs["AutoExec"].Button.MouseButton1Click:Connect(function() switchTab("AutoExec") end)
@@ -568,6 +654,7 @@ tabs["Scripts"].Button.MouseButton1Click:Connect(function()
     switchTab("Scripts") 
     refreshScripts()
 end)
+tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 
 -- Init
 switchTab("AutoExec")
