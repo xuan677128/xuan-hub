@@ -404,7 +404,6 @@ end)
 local ThemeLabel = Instance.new("TextLabel")
 ThemeLabel.Size = UDim2.new(1, 0, 0, 30)
 ThemeLabel.BackgroundTransparency = 1
-ThemeLabel.Text = "Theme Color"
 ThemeLabel.TextColor3 = THEME.SubText
 ThemeLabel.Font = Enum.Font.GothamBold
 ThemeLabel.TextSize = 14
@@ -708,3 +707,4 @@ tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end
 
 -- Init
 switchTab("AutoExec")
+
