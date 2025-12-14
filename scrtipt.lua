@@ -909,7 +909,7 @@ InventoryButtonsLayout.Parent = InventoryButtons
 local MagpieTitle = Instance.new("TextLabel")
 MagpieTitle.Text = "Magpie Automation"
 MagpieTitle.Size = UDim2.new(0.6, 0, 0, 32)
-MagpieTitle.Position = UDim2.new(0, 0, 0, 28)
+MagpieTitle.Position = UDim2.new(0, 0, 0, 25)
 MagpieTitle.BackgroundTransparency = 1
 MagpieTitle.TextColor3 = THEME.Text
 MagpieTitle.Font = Enum.Font.GothamBold
@@ -920,7 +920,7 @@ MagpieTitle.Parent = MagpieFrame
 local MagpieSubtitle = Instance.new("TextLabel")
 MagpieSubtitle.Text = "Automatically harvest fruits, shovel rares, and sell hauls while you relax."
 MagpieSubtitle.Size = UDim2.new(0.8, 0, 0, 20)
-MagpieSubtitle.Position = UDim2.new(0, 0, 0, 60)
+MagpieSubtitle.Position = UDim2.new(0, 0, 0, 55)
 MagpieSubtitle.BackgroundTransparency = 1
 MagpieSubtitle.TextColor3 = THEME.SubText
 MagpieSubtitle.Font = Enum.Font.Gotham
@@ -1612,7 +1612,6 @@ LaunchBtn.MouseButton1Click:Connect(function()
         notify("Magpie Method Started!", THEME.Green)
         setAutomationStatus("Running", THEME.Green)
         resolveFarm()
-        rebuildSeedInventory()
         rebuildFruitInventory(true)
 
         task.spawn(function()
@@ -1620,10 +1619,6 @@ LaunchBtn.MouseButton1Click:Connect(function()
             while magpieActive do
                 iteration = iteration + 1
                 pcall(function()
-                    if iteration % 12 == 0 then
-                        rebuildSeedInventory()
-                    end
-
                     harvestMatchingPlants()
 
                     if iteration % 6 == 0 then
