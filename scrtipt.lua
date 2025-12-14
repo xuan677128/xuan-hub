@@ -16,7 +16,7 @@ if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
 pcall(function()
     local autoFiles = listfiles(AUTOEXEC_DIR)
     if #autoFiles == 0 then
-        writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads')")
+        writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads")
     end
     
     for _, file in pairs(listfiles(AUTOEXEC_DIR)) do
@@ -706,7 +706,7 @@ local AboutText = Instance.new("TextLabel")
 AboutText.Size = UDim2.new(1, -20, 1, -10)
 AboutText.Position = UDim2.new(0, 10, 0, 5)
 AboutText.BackgroundTransparency = 1
-AboutText.Text = "XuanHub Remastered\n\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
+AboutText.Text = "XuanHub Remastered v1.1\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Utilities (Anti-AFK, Rejoin, Server Hop)\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
 AboutText.TextColor3 = THEME.Text
 AboutText.Font = Enum.Font.Gotham
 AboutText.TextSize = 13
@@ -714,6 +714,322 @@ AboutText.TextWrapped = true
 AboutText.TextXAlignment = Enum.TextXAlignment.Left
 AboutText.TextYAlignment = Enum.TextYAlignment.Top
 AboutText.Parent = AboutContainer
+
+-- PAGE: Garden
+local GardenPage = Instance.new("Frame")
+GardenPage.Size = UDim2.new(1, 0, 1, 0)
+GardenPage.BackgroundTransparency = 1
+GardenPage.Visible = false
+GardenPage.Parent = Content
+
+-- Method Selection
+local MethodContainer = Instance.new("Frame")
+MethodContainer.Size = UDim2.new(1, 0, 1, 0)
+MethodContainer.BackgroundTransparency = 1
+MethodContainer.Parent = GardenPage
+
+local function createMethodBtn(name, color, position, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 200, 0, 50)
+    btn.Position = position
+    btn.BackgroundColor3 = color
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = MethodContainer
+    
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 8)
+    c.Parent = btn
+    
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- Magpie UI
+local MagpieFrame = Instance.new("Frame")
+MagpieFrame.Size = UDim2.new(1, 0, 1, 0)
+MagpieFrame.BackgroundTransparency = 1
+MagpieFrame.Visible = false
+MagpieFrame.Parent = GardenPage
+
+local MagpieBack = Instance.new("TextButton")
+MagpieBack.Size = UDim2.new(0, 60, 0, 25)
+MagpieBack.BackgroundColor3 = THEME.Sidebar
+MagpieBack.Text = "< Back"
+MagpieBack.TextColor3 = THEME.Text
+MagpieBack.Font = Enum.Font.GothamBold
+MagpieBack.TextSize = 12
+MagpieBack.Parent = MagpieFrame
+local MB_Corner = Instance.new("UICorner")
+MB_Corner.CornerRadius = UDim.new(0, 6)
+MB_Corner.Parent = MagpieBack
+
+MagpieBack.MouseButton1Click:Connect(function()
+    MagpieFrame.Visible = false
+    MethodContainer.Visible = true
+end)
+
+-- Magpie: Inventory List
+local InvLabel = Instance.new("TextLabel")
+InvLabel.Text = "Your Pets"
+InvLabel.Size = UDim2.new(0.45, 0, 0, 20)
+InvLabel.Position = UDim2.new(0, 0, 0, 30)
+InvLabel.BackgroundTransparency = 1
+InvLabel.TextColor3 = THEME.SubText
+InvLabel.Font = Enum.Font.GothamBold
+InvLabel.TextSize = 12
+InvLabel.Parent = MagpieFrame
+
+local InvScroll = Instance.new("ScrollingFrame")
+InvScroll.Size = UDim2.new(0.45, 0, 0.6, 0)
+InvScroll.Position = UDim2.new(0, 0, 0, 50)
+InvScroll.BackgroundColor3 = THEME.Item
+InvScroll.ScrollBarThickness = 2
+InvScroll.Parent = MagpieFrame
+local InvLayout = Instance.new("UIListLayout")
+InvLayout.Parent = InvScroll
+
+-- Magpie: Team List
+local TeamLabel = Instance.new("TextLabel")
+TeamLabel.Text = "Selected Team (Max 8)"
+TeamLabel.Size = UDim2.new(0.45, 0, 0, 20)
+TeamLabel.Position = UDim2.new(0.55, 0, 0, 30)
+TeamLabel.BackgroundTransparency = 1
+TeamLabel.TextColor3 = THEME.SubText
+TeamLabel.Font = Enum.Font.GothamBold
+TeamLabel.TextSize = 12
+TeamLabel.Parent = MagpieFrame
+
+local TeamScroll = Instance.new("ScrollingFrame")
+TeamScroll.Size = UDim2.new(0.45, 0, 0.4, 0) -- Reduced height to fit toggles
+TeamScroll.Position = UDim2.new(0.55, 0, 0, 50)
+TeamScroll.BackgroundColor3 = THEME.Item
+TeamScroll.ScrollBarThickness = 2
+TeamScroll.Parent = MagpieFrame
+local TeamLayout = Instance.new("UIListLayout")
+TeamLayout.Parent = TeamScroll
+
+-- Toggles Container
+local ToggleContainer = Instance.new("Frame")
+ToggleContainer.Size = UDim2.new(1, 0, 0.25, 0)
+ToggleContainer.Position = UDim2.new(0, 0, 0.55, 0) -- Below lists
+ToggleContainer.BackgroundTransparency = 1
+ToggleContainer.Parent = MagpieFrame
+
+local ToggleLayout = Instance.new("UIListLayout")
+ToggleLayout.Padding = UDim.new(0, 5)
+ToggleLayout.Parent = ToggleContainer
+
+local function createMagpieToggle(text, default, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.BackgroundColor3 = THEME.Sidebar
+    btn.Text = text .. ": " .. (default and "ON" or "OFF")
+    btn.TextColor3 = default and THEME.Green or THEME.Red
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.Parent = ToggleContainer
+    
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = btn
+    
+    local state = default
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        btn.TextColor3 = state and THEME.Green or THEME.Red
+        callback(state)
+    end)
+    return state
+end
+
+-- Magpie Logic Variables
+local myPets = {} -- Placeholder for inventory
+local selectedTeam = {}
+local magpieActive = false
+local config = {
+    CollectSilver = true,
+    ShovelRare = true,
+    AutoSell = true
+}
+
+-- Save/Load System
+local GARDEN_FILE = "XuanHub/GrowAgarden.json"
+local HttpService = game:GetService("HttpService")
+
+local function saveGardenConfig()
+    local data = {
+        Team = selectedTeam,
+        Config = config
+    }
+    if writefile then
+        writefile(GARDEN_FILE, HttpService:JSONEncode(data))
+    end
+end
+
+local function loadGardenConfig()
+    if isfile and isfile(GARDEN_FILE) then
+        local success, result = pcall(function()
+            return HttpService:JSONDecode(readfile(GARDEN_FILE))
+        end)
+        if success then
+            if result.Team then selectedTeam = result.Team end
+            -- Note: Config loading would require updating toggle button states visually
+        end
+    end
+end
+
+-- Create Toggles
+createMagpieToggle("Auto Collect Silver", true, function(s) config.CollectSilver = s; saveGardenConfig() end)
+createMagpieToggle("Auto Shovel Rainbow/Gold", true, function(s) config.ShovelRare = s; saveGardenConfig() end)
+createMagpieToggle("Auto Sell (Full Backpack)", true, function(s) config.AutoSell = s; saveGardenConfig() end)
+
+-- Function to refresh lists
+local function refreshMagpieUI()
+    -- Clear lists
+    for _, v in pairs(InvScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    for _, v in pairs(TeamScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    
+    -- Populate Inventory
+    for i, pet in pairs(myPets) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 25)
+        btn.BackgroundColor3 = THEME.Sidebar
+        btn.Text = pet.Name or "Unknown Pet"
+        btn.TextColor3 = THEME.Text
+        btn.Parent = InvScroll
+        
+        btn.MouseButton1Click:Connect(function()
+            if #selectedTeam < 8 then
+                table.insert(selectedTeam, pet)
+                saveGardenConfig()
+                refreshMagpieUI()
+            else
+                notify("Team Full (Max 8)", THEME.Red)
+            end
+        end)
+    end
+    
+    -- Populate Team
+    for i, pet in pairs(selectedTeam) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 25)
+        btn.BackgroundColor3 = THEME.Accent
+        btn.Text = pet.Name or "Unknown Pet"
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Parent = TeamScroll
+        
+        btn.MouseButton1Click:Connect(function()
+            table.remove(selectedTeam, i)
+            saveGardenConfig()
+            refreshMagpieUI()
+        end)
+    end
+end
+
+-- Mock Inventory Loader (Replace with real game logic)
+local function loadInventory()
+    -- Load Saved Config First
+    loadGardenConfig()
+
+    -- Placeholder: Try to find pets in common locations
+    myPets = {}
+    -- Example: 
+    -- for _, v in pairs(game.Players.LocalPlayer.PlayerGui.Inventory:GetChildren()) do table.insert(myPets, {Name = v.Name}) end
+    
+    -- Adding dummy pets for UI demonstration
+    for i=1, 10 do table.insert(myPets, {Name = "Pet " .. i}) end
+    refreshMagpieUI()
+end
+
+-- Launch Button
+local LaunchBtn = Instance.new("TextButton")
+LaunchBtn.Size = UDim2.new(1, 0, 0, 40)
+LaunchBtn.Position = UDim2.new(0, 0, 1, -40)
+LaunchBtn.BackgroundColor3 = THEME.Green
+LaunchBtn.Text = "LAUNCH MAGPIE"
+LaunchBtn.TextColor3 = Color3.new(1,1,1)
+LaunchBtn.Font = Enum.Font.GothamBold
+LaunchBtn.TextSize = 16
+LaunchBtn.Parent = MagpieFrame
+local LaunchCorner = Instance.new("UICorner")
+LaunchCorner.CornerRadius = UDim.new(0, 8)
+LaunchCorner.Parent = LaunchBtn
+
+LaunchBtn.MouseButton1Click:Connect(function()
+    magpieActive = not magpieActive
+    if magpieActive then
+        LaunchBtn.Text = "STOP MAGPIE"
+        LaunchBtn.BackgroundColor3 = THEME.Red
+        notify("Magpie Method Started!", THEME.Green)
+        
+        -- Start Automation Loop
+        spawn(function()
+            while magpieActive do
+                -- 1. Equip Selected Team
+                -- This would typically involve firing a remote to equip pets
+                -- for _, pet in pairs(selectedTeam) do EquipPet(pet) end
+                
+                -- 2. Scan Garden (Workspace)
+                -- Search for objects with ClickDetectors matching our settings
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if not magpieActive then break end
+                    
+                    -- Safety Check: Ignore Pets (which also have Gold/Silver variants)
+                    -- We check if the object or its parent is likely a pet
+                    local isPet = v.Name:match("Pet") or (v.Parent and v.Parent.Name:match("Pets")) or v:FindFirstChild("Humanoid")
+                    
+                    if not isPet then
+                        -- Check if object matches our filters
+                        local isSilver = config.CollectSilver and v.Name:find("Silver")
+                        local isRare = config.ShovelRare and (v.Name:find("Gold") or v.Name:find("Rainbow"))
+                        
+                        if isSilver or isRare then
+                            -- Look for ClickDetector inside the object
+                            local cd = v:FindFirstChildWhichIsA("ClickDetector", true)
+                            
+                            if cd then
+                                -- Fire the detector directly (No Teleport)
+                                fireclickdetector(cd)
+                                task.wait(0.1) -- Small delay to prevent crashes
+                            end
+                        end
+                    end
+                end
+                
+                -- 3. Auto Sell
+                if config.AutoSell then
+                    -- Check if backpack is full
+                    -- local backpack = game.Players.LocalPlayer.Backpack
+                    -- if #backpack:GetChildren() >= MaxSlots then
+                    --     -- Teleport to sell area
+                    -- end
+                end
+                
+                wait(1)
+            end
+        end)
+    else
+        LaunchBtn.Text = "LAUNCH MAGPIE"
+        LaunchBtn.BackgroundColor3 = THEME.Green
+        notify("Magpie Method Stopped", THEME.Red)
+    end
+end)
+
+-- Init Magpie
+loadInventory()
+
+-- Method Buttons
+createMethodBtn("Magpie Method", THEME.Accent, UDim2.new(0.5, -100, 0.3, 0), function()
+    MethodContainer.Visible = false
+    MagpieFrame.Visible = true
+end)
+
+createMethodBtn("Panther Method", THEME.Sidebar, UDim2.new(0.5, -100, 0.5, 0), function()
+    notify("Panther Method Coming Soon!", THEME.Sidebar)
+end)
 
 -- PAGE: Scripts
 local ScriptsPage = Instance.new("Frame")
@@ -911,8 +1227,9 @@ end
 -- Register Tabs
 tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
 tabs["Scripts"] = { Button = createTabButton("Scripts", 1), Page = ScriptsPage }
-tabs["Settings"] = { Button = createTabButton("Settings", 2), Page = SettingsPage }
-tabs["About"] = { Button = createTabButton("About", 3), Page = AboutPage }
+tabs["Garden"] = { Button = createTabButton("Garden", 2), Page = GardenPage }
+tabs["Settings"] = { Button = createTabButton("Settings", 3), Page = SettingsPage }
+tabs["About"] = { Button = createTabButton("About", 4), Page = AboutPage }
 
 -- Button Events
 tabs["AutoExec"].Button.MouseButton1Click:Connect(function() 
@@ -923,9 +1240,9 @@ tabs["Scripts"].Button.MouseButton1Click:Connect(function()
     switchTab("Scripts") 
     refreshScripts()
 end)
+tabs["Garden"].Button.MouseButton1Click:Connect(function() switchTab("Garden") end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
 -- Init
 switchTab("AutoExec")
-
