@@ -931,7 +931,7 @@ MagpieSubtitle.Parent = MagpieFrame
 -- Magpie: Fruit Inventory Card
 local FruitCard = Instance.new("Frame")
 FruitCard.Size = UDim2.new(0.58, 0, 0.7, 0)
-FruitCard.Position = UDim2.new(0, 0, 0, 90)
+FruitCard.Position = UDim2.new(0, 0, 0, 85)
 FruitCard.BackgroundColor3 = THEME.Item
 FruitCard.Parent = MagpieFrame
 local FruitCardCorner = Instance.new("UICorner")
@@ -972,7 +972,7 @@ FruitLayout.Parent = FruitScroll
 -- Magpie: Automation Panel
 local AutomationPanel = Instance.new("Frame")
 AutomationPanel.Size = UDim2.new(0.38, 0, 0.7, 0)
-AutomationPanel.Position = UDim2.new(0.62, 0, 0, 90)
+AutomationPanel.Position = UDim2.new(0.62, 0, 0, 85)
 AutomationPanel.BackgroundColor3 = THEME.Item
 AutomationPanel.Parent = MagpieFrame
 local AutomationCorner = Instance.new("UICorner")
@@ -1593,7 +1593,7 @@ end
 -- Launch Button
 local LaunchBtn = Instance.new("TextButton")
 LaunchBtn.Size = UDim2.new(1, 0, 0, 40)
-LaunchBtn.Position = UDim2.new(0, 0, 1, -40)
+LaunchBtn.Position = UDim2.new(0, 0, 1, -45)
 LaunchBtn.BackgroundColor3 = THEME.Green
 LaunchBtn.Text = "LAUNCH MAGPIE"
 LaunchBtn.TextColor3 = Color3.new(1,1,1)
