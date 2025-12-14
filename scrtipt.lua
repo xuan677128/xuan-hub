@@ -2,6 +2,9 @@
 -- Services
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 -- File System Setup
 local ROOT = "XuanHub"
@@ -11,6 +14,20 @@ local AUTOEXEC_DIR = ROOT .. "/Autoexecute"
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
 if not isfolder(AUTOEXEC_DIR) then makefolder(AUTOEXEC_DIR) end
+
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local function getCharacter()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local GameEvents = ReplicatedStorage:WaitForChild("GameEvents", 5)
+local FarmFolder = workspace:FindFirstChild("Farm") or workspace:WaitForChild("Farm", 5)
+local PlantEvent = GameEvents and GameEvents:FindFirstChild("Plant_RE")
+local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
+local BuySeedEvent = GameEvents and GameEvents:FindFirstChild("BuySeedStock")
 
 -- Internal Auto Execution
 pcall(function()
@@ -770,9 +787,128 @@ MagpieBack.MouseButton1Click:Connect(function()
     MethodContainer.Visible = true
 end)
 
--- Magpie: Inventory List
+-- Inventory UI (Seed Shop)
+local InventoryFrame = Instance.new("Frame")
+InventoryFrame.Size = UDim2.new(1, 0, 1, 0)
+InventoryFrame.BackgroundTransparency = 1
+InventoryFrame.Visible = false
+InventoryFrame.Parent = GardenPage
+
+local InventoryBack = Instance.new("TextButton")
+InventoryBack.Size = UDim2.new(0, 60, 0, 25)
+InventoryBack.BackgroundColor3 = THEME.Sidebar
+InventoryBack.Text = "< Back"
+InventoryBack.TextColor3 = THEME.Text
+InventoryBack.Font = Enum.Font.GothamBold
+InventoryBack.TextSize = 12
+InventoryBack.Parent = InventoryFrame
+local IB_Corner = Instance.new("UICorner")
+IB_Corner.CornerRadius = UDim.new(0, 6)
+IB_Corner.Parent = InventoryBack
+
+InventoryBack.MouseButton1Click:Connect(function()
+    InventoryFrame.Visible = false
+    MethodContainer.Visible = true
+end)
+
+local StockLabel = Instance.new("TextLabel")
+StockLabel.Text = "Seed Shop Stock"
+StockLabel.Size = UDim2.new(0.45, 0, 0, 20)
+StockLabel.Position = UDim2.new(0, 0, 0, 30)
+StockLabel.BackgroundTransparency = 1
+StockLabel.TextColor3 = THEME.SubText
+StockLabel.Font = Enum.Font.GothamBold
+StockLabel.TextSize = 12
+StockLabel.Parent = InventoryFrame
+
+local StockScroll = Instance.new("ScrollingFrame")
+StockScroll.Size = UDim2.new(0.45, 0, 0.75, 0)
+StockScroll.Position = UDim2.new(0, 0, 0, 55)
+StockScroll.BackgroundColor3 = THEME.Item
+StockScroll.ScrollBarThickness = 2
+StockScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+StockScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+StockScroll.Parent = InventoryFrame
+local StockCorner = Instance.new("UICorner")
+StockCorner.CornerRadius = UDim.new(0, 8)
+StockCorner.Parent = StockScroll
+local StockLayout = Instance.new("UIListLayout")
+StockLayout.Padding = UDim.new(0, 4)
+StockLayout.Parent = StockScroll
+
+local InventoryDetails = Instance.new("Frame")
+InventoryDetails.Size = UDim2.new(0.45, 0, 0.75, 0)
+InventoryDetails.Position = UDim2.new(0.55, 0, 0, 55)
+InventoryDetails.BackgroundColor3 = THEME.Item
+InventoryDetails.Parent = InventoryFrame
+local InventoryDetailsCorner = Instance.new("UICorner")
+InventoryDetailsCorner.CornerRadius = UDim.new(0, 8)
+InventoryDetailsCorner.Parent = InventoryDetails
+local InventoryDetailsPadding = Instance.new("UIPadding")
+InventoryDetailsPadding.PaddingLeft = UDim.new(0, 10)
+InventoryDetailsPadding.PaddingRight = UDim.new(0, 10)
+InventoryDetailsPadding.PaddingTop = UDim.new(0, 10)
+InventoryDetailsPadding.PaddingBottom = UDim.new(0, 10)
+InventoryDetailsPadding.Parent = InventoryDetails
+local InventoryDetailsLayout = Instance.new("UIListLayout")
+InventoryDetailsLayout.Padding = UDim.new(0, 8)
+InventoryDetailsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+InventoryDetailsLayout.Parent = InventoryDetails
+
+local InventoryHeader = Instance.new("TextLabel")
+InventoryHeader.Size = UDim2.new(1, 0, 0, 20)
+InventoryHeader.BackgroundTransparency = 1
+InventoryHeader.Text = "Seed Details"
+InventoryHeader.TextColor3 = THEME.SubText
+InventoryHeader.Font = Enum.Font.GothamBold
+InventoryHeader.TextSize = 13
+InventoryHeader.TextXAlignment = Enum.TextXAlignment.Left
+InventoryHeader.Parent = InventoryDetails
+
+local SelectedSeedNameLabel = Instance.new("TextLabel")
+SelectedSeedNameLabel.Size = UDim2.new(1, 0, 0, 22)
+SelectedSeedNameLabel.BackgroundTransparency = 1
+SelectedSeedNameLabel.Text = "Select a seed to view info"
+SelectedSeedNameLabel.TextColor3 = THEME.Text
+SelectedSeedNameLabel.Font = Enum.Font.Gotham
+SelectedSeedNameLabel.TextSize = 12
+SelectedSeedNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+SelectedSeedNameLabel.Parent = InventoryDetails
+
+local SelectedSeedStockLabel = Instance.new("TextLabel")
+SelectedSeedStockLabel.Size = UDim2.new(1, 0, 0, 20)
+SelectedSeedStockLabel.BackgroundTransparency = 1
+SelectedSeedStockLabel.Text = "Stock: --"
+SelectedSeedStockLabel.TextColor3 = THEME.SubText
+SelectedSeedStockLabel.Font = Enum.Font.Gotham
+SelectedSeedStockLabel.TextSize = 11
+SelectedSeedStockLabel.TextXAlignment = Enum.TextXAlignment.Left
+SelectedSeedStockLabel.Parent = InventoryDetails
+
+local InventoryStatusLabel = Instance.new("TextLabel")
+InventoryStatusLabel.Size = UDim2.new(1, 0, 0, 32)
+InventoryStatusLabel.BackgroundTransparency = 1
+InventoryStatusLabel.Text = "Open the Seed Shop to load stock."
+InventoryStatusLabel.TextColor3 = THEME.SubText
+InventoryStatusLabel.Font = Enum.Font.Gotham
+InventoryStatusLabel.TextSize = 11
+InventoryStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+InventoryStatusLabel.TextWrapped = true
+InventoryStatusLabel.Parent = InventoryDetails
+
+local InventoryButtons = Instance.new("Frame")
+InventoryButtons.Size = UDim2.new(1, 0, 0, 150)
+InventoryButtons.BackgroundTransparency = 1
+InventoryButtons.Parent = InventoryDetails
+local InventoryButtonsLayout = Instance.new("UIListLayout")
+InventoryButtonsLayout.Padding = UDim.new(0, 6)
+InventoryButtonsLayout.FillDirection = Enum.FillDirection.Vertical
+InventoryButtonsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+InventoryButtonsLayout.Parent = InventoryButtons
+
+-- Magpie: Inventory List (Top Left)
 local InvLabel = Instance.new("TextLabel")
-InvLabel.Text = "Your Pets"
+InvLabel.Text = "Available Seeds"
 InvLabel.Size = UDim2.new(0.45, 0, 0, 20)
 InvLabel.Position = UDim2.new(0, 0, 0, 30)
 InvLabel.BackgroundTransparency = 1
@@ -782,7 +918,7 @@ InvLabel.TextSize = 12
 InvLabel.Parent = MagpieFrame
 
 local InvScroll = Instance.new("ScrollingFrame")
-InvScroll.Size = UDim2.new(0.45, 0, 0.6, 0)
+InvScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
 InvScroll.Position = UDim2.new(0, 0, 0, 50)
 InvScroll.BackgroundColor3 = THEME.Item
 InvScroll.ScrollBarThickness = 2
@@ -790,9 +926,9 @@ InvScroll.Parent = MagpieFrame
 local InvLayout = Instance.new("UIListLayout")
 InvLayout.Parent = InvScroll
 
--- Magpie: Team List
+-- Magpie: Team List (Top Right)
 local TeamLabel = Instance.new("TextLabel")
-TeamLabel.Text = "Selected Team (Max 8)"
+TeamLabel.Text = "Selected Seeds (Max 8)"
 TeamLabel.Size = UDim2.new(0.45, 0, 0, 20)
 TeamLabel.Position = UDim2.new(0.55, 0, 0, 30)
 TeamLabel.BackgroundTransparency = 1
@@ -802,7 +938,7 @@ TeamLabel.TextSize = 12
 TeamLabel.Parent = MagpieFrame
 
 local TeamScroll = Instance.new("ScrollingFrame")
-TeamScroll.Size = UDim2.new(0.45, 0, 0.4, 0) -- Reduced height to fit toggles
+TeamScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
 TeamScroll.Position = UDim2.new(0.55, 0, 0, 50)
 TeamScroll.BackgroundColor3 = THEME.Item
 TeamScroll.ScrollBarThickness = 2
@@ -810,10 +946,30 @@ TeamScroll.Parent = MagpieFrame
 local TeamLayout = Instance.new("UIListLayout")
 TeamLayout.Parent = TeamScroll
 
--- Toggles Container
+-- Magpie: Fruit Inventory (Bottom Left)
+local FruitLabel = Instance.new("TextLabel")
+FruitLabel.Text = "Fruit Inventory"
+FruitLabel.Size = UDim2.new(0.45, 0, 0, 20)
+FruitLabel.Position = UDim2.new(0, 0, 0.45, 0)
+FruitLabel.BackgroundTransparency = 1
+FruitLabel.TextColor3 = THEME.SubText
+FruitLabel.Font = Enum.Font.GothamBold
+FruitLabel.TextSize = 12
+FruitLabel.Parent = MagpieFrame
+
+local FruitScroll = Instance.new("ScrollingFrame")
+FruitScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
+FruitScroll.Position = UDim2.new(0, 0, 0.45, 20)
+FruitScroll.BackgroundColor3 = THEME.Item
+FruitScroll.ScrollBarThickness = 2
+FruitScroll.Parent = MagpieFrame
+local FruitLayout = Instance.new("UIListLayout")
+FruitLayout.Parent = FruitScroll
+
+-- Toggles Container (Bottom Right)
 local ToggleContainer = Instance.new("Frame")
-ToggleContainer.Size = UDim2.new(1, 0, 0.25, 0)
-ToggleContainer.Position = UDim2.new(0, 0, 0.55, 0) -- Below lists
+ToggleContainer.Size = UDim2.new(0.45, 0, 0.35, 0)
+ToggleContainer.Position = UDim2.new(0.55, 0, 0.45, 20)
 ToggleContainer.BackgroundTransparency = 1
 ToggleContainer.Parent = MagpieFrame
 
@@ -828,7 +984,7 @@ local function createMagpieToggle(text, default, callback)
     btn.Text = text .. ": " .. (default and "ON" or "OFF")
     btn.TextColor3 = default and THEME.Green or THEME.Red
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
+    btn.TextSize = 10 -- Smaller text to fit
     btn.Parent = ToggleContainer
     
     local c = Instance.new("UICorner")
@@ -846,16 +1002,35 @@ local function createMagpieToggle(text, default, callback)
 end
 
 -- Magpie Logic Variables
-local myPets = {} -- Placeholder for inventory
+local mySeeds = {}
+local myFruits = {}
+local seedLookup = {}
 local selectedTeam = {}
 local magpieActive = false
 local config = {
-    CollectSilver = true,
-    ShovelRare = true,
-    AutoSell = true
+    CollectSilver = false,
+    ShovelRare = false,
+    AutoSell = false
 }
 
--- Save/Load System
+local seedShopData = {}
+local seedShopLookup = {}
+local selectedStockName = nil
+local inventoryBusy = false
+local autoBuyAllActive = false
+local autoBuyAllThread = nil
+local AutoBuyAllButton = nil
+
+local farmData = {
+    PlantLocations = nil,
+    PlantsPhysical = nil,
+    Spots = {}
+}
+
+local SELL_THRESHOLD = 25
+local SELL_POINT = CFrame.new(62, 4, -26)
+local isSelling = false
+
 local GARDEN_FILE = "XuanHub/GrowAgarden.json"
 local HttpService = game:GetService("HttpService")
 
@@ -870,78 +1045,636 @@ local function saveGardenConfig()
 end
 
 local function loadGardenConfig()
-    if isfile and isfile(GARDEN_FILE) then
-        local success, result = pcall(function()
-            return HttpService:JSONDecode(readfile(GARDEN_FILE))
-        end)
-        if success then
-            if result.Team then selectedTeam = result.Team end
-            -- Note: Config loading would require updating toggle button states visually
+    if not (isfile and isfile(GARDEN_FILE)) then return end
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(readfile(GARDEN_FILE))
+    end)
+    if not success then return end
+    if typeof(result.Team) == "table" then
+        selectedTeam = {}
+        for _, entry in ipairs(result.Team) do
+            if typeof(entry) == "string" then
+                table.insert(selectedTeam, entry)
+            elseif typeof(entry) == "table" and entry.Name then
+                table.insert(selectedTeam, entry.Name)
+            end
+        end
+    end
+    if typeof(result.Config) == "table" then
+        for k, v in pairs(result.Config) do
+            if config[k] ~= nil then
+                config[k] = v
+            end
         end
     end
 end
 
--- Create Toggles
-createMagpieToggle("Auto Collect Silver", true, function(s) config.CollectSilver = s; saveGardenConfig() end)
-createMagpieToggle("Auto Shovel Rainbow/Gold", true, function(s) config.ShovelRare = s; saveGardenConfig() end)
-createMagpieToggle("Auto Sell (Full Backpack)", true, function(s) config.AutoSell = s; saveGardenConfig() end)
-
--- Function to refresh lists
-local function refreshMagpieUI()
-    -- Clear lists
-    for _, v in pairs(InvScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    for _, v in pairs(TeamScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    
-    -- Populate Inventory
-    for i, pet in pairs(myPets) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 25)
-        btn.BackgroundColor3 = THEME.Sidebar
-        btn.Text = pet.Name or "Unknown Pet"
-        btn.TextColor3 = THEME.Text
-        btn.Parent = InvScroll
-        
-        btn.MouseButton1Click:Connect(function()
-            if #selectedTeam < 8 then
-                table.insert(selectedTeam, pet)
-                saveGardenConfig()
-                refreshMagpieUI()
-            else
-                notify("Team Full (Max 8)", THEME.Red)
-            end
-        end)
+local function renderFruitList()
+    for _, child in pairs(FruitScroll:GetChildren()) do
+        if child:IsA("Frame") then
+            child:Destroy()
+        end
     end
-    
-    -- Populate Team
-    for i, pet in pairs(selectedTeam) do
+
+    local fruitArray = {}
+    for name, count in pairs(myFruits) do
+        table.insert(fruitArray, {Name = name, Count = count})
+    end
+    table.sort(fruitArray, function(a, b)
+        return a.Name < b.Name
+    end)
+
+    for _, fruit in ipairs(fruitArray) do
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 0, 22)
+        frame.BackgroundTransparency = 1
+        frame.Parent = FruitScroll
+
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, -10, 1, 0)
+        label.Position = UDim2.new(0, 10, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = string.format("%s: %d", fruit.Name, fruit.Count)
+        label.TextColor3 = THEME.Text
+        label.Font = Enum.Font.Gotham
+        label.TextSize = 11
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Parent = frame
+    end
+end
+
+local function refreshMagpieUI()
+    for _, v in pairs(InvScroll:GetChildren()) do
+        if v:IsA("TextButton") then
+            v:Destroy()
+        end
+    end
+    for _, v in pairs(TeamScroll:GetChildren()) do
+        if v:IsA("TextButton") then
+            v:Destroy()
+        end
+    end
+
+    for _, seed in ipairs(mySeeds) do
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 25)
-        btn.BackgroundColor3 = THEME.Accent
-        btn.Text = pet.Name or "Unknown Pet"
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Parent = TeamScroll
-        
+        btn.Size = UDim2.new(1, 0, 0, 24)
+        btn.BackgroundColor3 = THEME.Sidebar
+        btn.Text = string.format("%s (%d)", seed.Name or "Seed", seed.Count or 0)
+        btn.TextColor3 = THEME.Text
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 11
+        btn.Parent = InvScroll
+
         btn.MouseButton1Click:Connect(function()
-            table.remove(selectedTeam, i)
+            if table.find(selectedTeam, seed.Name) then
+                notify("Already selected", THEME.Sidebar)
+                return
+            end
+            if #selectedTeam >= 8 then
+                notify("Team Full (Max 8)", THEME.Red)
+                return
+            end
+            table.insert(selectedTeam, seed.Name)
             saveGardenConfig()
             refreshMagpieUI()
         end)
     end
+
+    for index, seedName in ipairs(selectedTeam) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 24)
+        btn.BackgroundColor3 = THEME.Accent
+        btn.Text = string.format("%s (%d)", seedName, seedLookup[seedName] and seedLookup[seedName].Count or 0)
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 11
+        btn.Parent = TeamScroll
+
+        btn.MouseButton1Click:Connect(function()
+            table.remove(selectedTeam, index)
+            saveGardenConfig()
+            refreshMagpieUI()
+        end)
+    end
+
+    renderFruitList()
 end
 
--- Mock Inventory Loader (Replace with real game logic)
-local function loadInventory()
-    -- Load Saved Config First
-    loadGardenConfig()
+local function scanSeedsFromContainer(container, bucket)
+    for _, tool in ipairs(container:GetChildren()) do
+        if tool:IsA("Tool") then
+            local plantName = tool:FindFirstChild("Plant_Name")
+            local numbers = tool:FindFirstChild("Numbers")
+            if plantName and numbers then
+                local seedName = plantName.Value
+                local entry = bucket[seedName]
+                if not entry then
+                    entry = {Name = seedName, Count = 0, Tool = tool}
+                    bucket[seedName] = entry
+                end
+                entry.Count = numbers.Value
+                entry.Tool = tool
+            end
+        end
+    end
+end
 
-    -- Placeholder: Try to find pets in common locations
-    myPets = {}
-    -- Example: 
-    -- for _, v in pairs(game.Players.LocalPlayer.PlayerGui.Inventory:GetChildren()) do table.insert(myPets, {Name = v.Name}) end
-    
-    -- Adding dummy pets for UI demonstration
-    for i=1, 10 do table.insert(myPets, {Name = "Pet " .. i}) end
-    refreshMagpieUI()
+local function rebuildSeedInventory(refreshUI)
+    local aggregate = {}
+    scanSeedsFromContainer(Backpack, aggregate)
+    local character = getCharacter()
+    if character then
+        scanSeedsFromContainer(character, aggregate)
+    end
+
+    mySeeds = {}
+    seedLookup = {}
+    for name, data in pairs(aggregate) do
+        seedLookup[name] = data
+        table.insert(mySeeds, {Name = name, Count = data.Count})
+    end
+
+    table.sort(mySeeds, function(a, b)
+        return a.Name < b.Name
+    end)
+
+    if refreshUI then
+        refreshMagpieUI()
+    end
+end
+
+local function collectFruitsFromContainer(container, bucket)
+    for _, tool in ipairs(container:GetChildren()) do
+        if tool:IsA("Tool") then
+            local fruitName = tool:FindFirstChild("Item_String")
+            if fruitName then
+                local key = fruitName.Value or tool.Name
+                bucket[key] = (bucket[key] or 0) + 1
+            end
+        end
+    end
+end
+
+local function rebuildFruitInventory(refreshUI)
+    local bucket = {}
+    collectFruitsFromContainer(Backpack, bucket)
+    local character = getCharacter()
+    if character then
+        collectFruitsFromContainer(character, bucket)
+    end
+
+    myFruits = bucket
+    if refreshUI then
+        renderFruitList()
+    end
+end
+
+local function setInventoryStatus(text, color)
+    InventoryStatusLabel.Text = text
+    InventoryStatusLabel.TextColor3 = color or THEME.SubText
+end
+
+local function updateSelectedSeedDisplay()
+    if selectedStockName and seedShopLookup[selectedStockName] then
+        local entry = seedShopLookup[selectedStockName]
+        SelectedSeedNameLabel.Text = entry.Name
+        SelectedSeedStockLabel.Text = string.format("Stock: %d", entry.Stock)
+    else
+        SelectedSeedNameLabel.Text = "Select a seed to view info"
+        SelectedSeedStockLabel.Text = "Stock: --"
+    end
+end
+
+local function clearStockEntries()
+    for _, child in ipairs(StockScroll:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+end
+
+local function fetchSeedStockData()
+    local ok, result = pcall(function()
+        local shopGui = PlayerGui:FindFirstChild("Seed_Shop")
+        if not shopGui then
+            return nil, "Open the Seed Shop NPC to populate this list."
+        end
+        local entries = {}
+        local seen = {}
+        for _, node in ipairs(shopGui:GetDescendants()) do
+            if node:IsA("Frame") and node.Name == "Main_Frame" then
+                local card = node.Parent
+                if card and not seen[card] then
+                    seen[card] = true
+                    local stockLabel = node:FindFirstChild("Stock_Text")
+                    local stockNumber = 0
+                    if stockLabel and stockLabel:IsA("TextLabel") then
+                        local digits = stockLabel.Text and stockLabel.Text:match("%d+")
+                        stockNumber = tonumber(digits) or 0
+                    end
+                    table.insert(entries, {Name = card.Name, Stock = stockNumber})
+                end
+            end
+        end
+        if #entries == 0 then
+            return nil, "Seed stock UI not detected; keep the shop window open."
+        end
+        table.sort(entries, function(a, b) return a.Name < b.Name end)
+        return entries
+    end)
+
+    if not ok then
+        return nil, "Failed to read Seed Shop UI."
+    end
+    return result
+end
+
+local function refreshInventoryList(showNotif)
+    local data, err = fetchSeedStockData()
+    if not data then
+        seedShopData = {}
+        seedShopLookup = {}
+        clearStockEntries()
+        selectedStockName = nil
+        updateSelectedSeedDisplay()
+        setInventoryStatus(err or "Unable to read stock.", THEME.Red)
+        return
+    end
+
+    seedShopData = data
+    seedShopLookup = {}
+    clearStockEntries()
+
+    for _, entry in ipairs(data) do
+        seedShopLookup[entry.Name] = entry
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -10, 0, 24)
+        btn.BackgroundColor3 = THEME.Sidebar
+        btn.TextColor3 = THEME.Text
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 11
+        btn.Text = string.format("%s • Stock: %d", entry.Name, entry.Stock)
+        btn.Parent = StockScroll
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = btn
+        btn.MouseButton1Click:Connect(function()
+            selectedStockName = entry.Name
+            updateSelectedSeedDisplay()
+        end)
+    end
+
+    if #data == 0 then
+        local placeholder = Instance.new("TextLabel")
+        placeholder.Size = UDim2.new(1, -10, 0, 24)
+        placeholder.BackgroundTransparency = 1
+        placeholder.Text = "No stock found. Open the shop UI and refresh."
+        placeholder.TextColor3 = THEME.SubText
+        placeholder.Font = Enum.Font.Gotham
+        placeholder.TextSize = 11
+        placeholder.Parent = StockScroll
+    end
+
+    StockScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(#data * 28, 10))
+    if selectedStockName and not seedShopLookup[selectedStockName] then
+        selectedStockName = nil
+    end
+    updateSelectedSeedDisplay()
+    setInventoryStatus(string.format("Found %d seed types.", #data), THEME.Green)
+    if showNotif then
+        notify("Seed stock refreshed!", THEME.Accent)
+    end
+end
+
+local function runPurchaseOrders(orders, statusText, successText)
+    if inventoryBusy then
+        setInventoryStatus("Purchase already running.", THEME.Red)
+        return
+    end
+    if not BuySeedEvent then
+        setInventoryStatus("Buy remote unavailable.", THEME.Red)
+        notify("Grow A Garden remote missing: BuySeedStock", THEME.Red)
+        return
+    end
+    inventoryBusy = true
+    setInventoryStatus(statusText, THEME.Accent)
+    task.spawn(function()
+        for _, order in ipairs(orders) do
+            for i = 1, order.Count do
+                BuySeedEvent:FireServer(order.Name)
+                task.wait(0.05)
+            end
+        end
+        inventoryBusy = false
+        setInventoryStatus(successText or "Purchase complete!", THEME.Green)
+        rebuildSeedInventory(true)
+        task.delay(0.3, function()
+            refreshInventoryList()
+        end)
+    end)
+end
+
+local function buySelectedSeeds(amount)
+    if not selectedStockName then
+        setInventoryStatus("Select a seed first.", THEME.Red)
+        return
+    end
+    local entry = seedShopLookup[selectedStockName]
+    if not entry then
+        setInventoryStatus("Refresh stock first.", THEME.Red)
+        return
+    end
+    if entry.Stock <= 0 then
+        setInventoryStatus("Seed is sold out.", THEME.Red)
+        return
+    end
+    local qty = math.clamp(math.floor(amount or 1), 1, entry.Stock)
+    runPurchaseOrders({{Name = selectedStockName, Count = qty}}, string.format("Buying %d %s...", qty, selectedStockName), "Selected purchase complete!")
+end
+
+local function buySelectedStock()
+    if not selectedStockName then
+        setInventoryStatus("Select a seed first.", THEME.Red)
+        return
+    end
+    local entry = seedShopLookup[selectedStockName]
+    if not entry then
+        setInventoryStatus("Refresh stock first.", THEME.Red)
+        return
+    end
+    if entry.Stock <= 0 then
+        setInventoryStatus("Seed is sold out.", THEME.Red)
+        return
+    end
+    runPurchaseOrders({{Name = selectedStockName, Count = entry.Stock}}, string.format("Buying all %s seeds...", selectedStockName), "Selected stock purchased!")
+end
+
+local function buyAllSeedsInShop()
+    if #seedShopData == 0 then
+        setInventoryStatus("Refresh stock first.", THEME.Red)
+        return
+    end
+    local orders = {}
+    local total = 0
+    for _, entry in ipairs(seedShopData) do
+        if entry.Stock > 0 then
+            table.insert(orders, {Name = entry.Name, Count = entry.Stock})
+            total = total + entry.Stock
+        end
+    end
+    if total == 0 then
+        setInventoryStatus("Everything is sold out.", THEME.Red)
+        return
+    end
+    runPurchaseOrders(orders, string.format("Buying %d seeds...", total), "All available seeds purchased!")
+end
+
+local function setAutoBuyButtonState(enabled)
+    if not AutoBuyAllButton then return end
+    if enabled then
+        AutoBuyAllButton.Text = "Auto Buy All (ON)"
+        AutoBuyAllButton.BackgroundColor3 = THEME.Red
+    else
+        AutoBuyAllButton.Text = "Auto Buy All (OFF)"
+        AutoBuyAllButton.BackgroundColor3 = THEME.Sidebar
+    end
+end
+
+local function startAutoBuyAllLoop()
+    if autoBuyAllThread then return end
+    autoBuyAllThread = task.spawn(function()
+        while autoBuyAllActive do
+            refreshInventoryList()
+            task.wait(0.2)
+            if not autoBuyAllActive then
+                break
+            end
+            buyAllSeedsInShop()
+            local guard = 0
+            while autoBuyAllActive and inventoryBusy and guard < 200 do
+                task.wait(0.1)
+                guard = guard + 1
+            end
+            local cooldown = 3
+            local elapsed = 0
+            while autoBuyAllActive and elapsed < cooldown do
+                task.wait(0.5)
+                elapsed = elapsed + 0.5
+            end
+        end
+        autoBuyAllThread = nil
+        if not autoBuyAllActive then
+            setAutoBuyButtonState(false)
+            setInventoryStatus("Auto-buy disabled.", THEME.SubText)
+        end
+    end)
+end
+
+local function createInventoryButton(text, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.Parent = InventoryButtons
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+createInventoryButton("Refresh Stock", THEME.Sidebar, function()
+    refreshInventoryList(true)
+end)
+createInventoryButton("Buy Selected (1)", THEME.Accent, function()
+    buySelectedSeeds(1)
+end)
+createInventoryButton("Buy Selected Stock", THEME.Green, function()
+    buySelectedStock()
+end)
+createInventoryButton("Buy All Seeds", THEME.Red, function()
+    buyAllSeedsInShop()
+end)
+AutoBuyAllButton = createInventoryButton("Auto Buy All (OFF)", THEME.Sidebar, function()
+    autoBuyAllActive = not autoBuyAllActive
+    if autoBuyAllActive then
+        setAutoBuyButtonState(true)
+        setInventoryStatus("Auto-buy enabled. Keep the shop UI open.", THEME.Accent)
+        startAutoBuyAllLoop()
+    else
+        setAutoBuyButtonState(false)
+        setInventoryStatus("Auto-buy disabled.", THEME.SubText)
+    end
+end)
+
+local function resolveFarm()
+    if farmData.PlantLocations and farmData.PlantsPhysical then
+        return
+    end
+    if not FarmFolder then return end
+    for _, farm in ipairs(FarmFolder:GetChildren()) do
+        local important = farm:FindFirstChild("Important")
+        local dataFolder = important and important:FindFirstChild("Data")
+        local ownerValue = dataFolder and dataFolder:FindFirstChild("Owner")
+        if ownerValue and ownerValue.Value == LocalPlayer.Name then
+            farmData.PlantLocations = important:FindFirstChild("Plant_Locations")
+            farmData.PlantsPhysical = important:FindFirstChild("Plants_Physical")
+            break
+        end
+    end
+end
+
+local function rebuildPlantSpots()
+    farmData.Spots = {}
+    if not farmData.PlantLocations then return end
+    for _, plot in ipairs(farmData.PlantLocations:GetChildren()) do
+        if plot:IsA("BasePart") then
+            local cf = plot.CFrame
+            local size = plot.Size
+            local step = math.max(2, math.floor(math.min(size.X, size.Z) / 6))
+            for x = -size.X / 2, size.X / 2, step do
+                for z = -size.Z / 2, size.Z / 2, step do
+                    local worldPoint = (cf * CFrame.new(x, 0.1, z)).Position
+                    table.insert(farmData.Spots, worldPoint)
+                end
+            end
+        end
+    end
+end
+
+local function variantAllowed(variant)
+    if not variant or variant == "" then
+        return config.CollectSilver
+    end
+    local lower = variant:lower()
+    if lower:find("rainbow") or lower:find("gold") then
+        return config.ShovelRare
+    end
+    return config.CollectSilver
+end
+
+local function harvestMatchingPlants()
+    if not farmData.PlantsPhysical then return end
+    for _, descendant in ipairs(farmData.PlantsPhysical:GetDescendants()) do
+        if descendant:IsA("Model") then
+            local variantValue = descendant:FindFirstChild("Variant")
+            local variant = variantValue and variantValue.Value or ""
+            if variantAllowed(variant) then
+                local prompt = descendant:FindFirstChildWhichIsA("ProximityPrompt", true)
+                if prompt and prompt.Enabled then
+                    fireproximityprompt(prompt)
+                    task.wait(0.03)
+                end
+            end
+        end
+    end
+end
+
+local PlantEvent = GameEvents and GameEvents:FindFirstChild("Plant_RE")
+local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
+
+local function plantSelectedSeeds()
+    if not PlantEvent or #selectedTeam == 0 then return end
+    if #farmData.Spots == 0 then
+        resolveFarm()
+        rebuildPlantSpots()
+    end
+    if #farmData.Spots == 0 then return end
+
+    local spotIndex = 1
+    for _, seedName in ipairs(selectedTeam) do
+        local details = seedLookup[seedName]
+        if details and details.Tool and details.Count and details.Count > 0 then
+            local character = getCharacter()
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:EquipTool(details.Tool)
+            end
+
+            local toPlant = math.min(details.Count, #farmData.Spots)
+            for _ = 1, toPlant do
+                local position = farmData.Spots[spotIndex]
+                PlantEvent:FireServer(position, seedName)
+                spotIndex = spotIndex + 1
+                if spotIndex > #farmData.Spots then
+                    spotIndex = 1
+                end
+                task.wait(0.05)
+            end
+        end
+    end
+end
+
+local function countCrops()
+    local total = 0
+    local function countTools(container)
+        for _, tool in ipairs(container:GetChildren()) do
+            if tool:IsA("Tool") and tool:FindFirstChild("Item_String") then
+                total = total + 1
+            end
+        end
+    end
+    countTools(Backpack)
+    local character = getCharacter()
+    if character then
+        countTools(character)
+    end
+    return total
+end
+
+local function sellInventory()
+    if isSelling or not SellEvent then return end
+    local character = getCharacter()
+    if not (character and character.PrimaryPart) then return end
+
+    isSelling = true
+    local previous = character.PrimaryPart.CFrame
+    character:PivotTo(SELL_POINT)
+    task.wait(0.25)
+
+    local attempts = 0
+    while countCrops() > 0 and attempts < 50 do
+        SellEvent:FireServer()
+        attempts = attempts + 1
+        task.wait(0.15)
+    end
+
+    character:PivotTo(previous)
+    isSelling = false
+end
+
+local function autoSellIfNeeded()
+    if not config.AutoSell then return end
+    if countCrops() < SELL_THRESHOLD then return end
+    sellInventory()
+end
+
+loadGardenConfig()
+
+createMagpieToggle("Auto Collect Silver", config.CollectSilver, function(state)
+    config.CollectSilver = state
+    saveGardenConfig()
+end)
+
+createMagpieToggle("Auto Shovel Gold/Rainbow", config.ShovelRare, function(state)
+    config.ShovelRare = state
+    saveGardenConfig()
+end)
+
+createMagpieToggle("Auto Sell", config.AutoSell, function(state)
+    config.AutoSell = state
+    saveGardenConfig()
+end)
+
+local function loadInventory()
+    loadGardenConfig()
+    resolveFarm()
+    rebuildPlantSpots()
+    rebuildSeedInventory(true)
+    rebuildFruitInventory(true)
 end
 
 -- Launch Button
@@ -964,51 +1697,30 @@ LaunchBtn.MouseButton1Click:Connect(function()
         LaunchBtn.Text = "STOP MAGPIE"
         LaunchBtn.BackgroundColor3 = THEME.Red
         notify("Magpie Method Started!", THEME.Green)
-        
-        -- Start Automation Loop
-        spawn(function()
+        resolveFarm()
+        rebuildPlantSpots()
+        rebuildSeedInventory(true)
+        rebuildFruitInventory(true)
+
+        task.spawn(function()
+            local iteration = 0
             while magpieActive do
-                -- 1. Equip Selected Team
-                -- This would typically involve firing a remote to equip pets
-                -- for _, pet in pairs(selectedTeam) do EquipPet(pet) end
-                
-                -- 2. Scan Garden (Workspace)
-                -- Search for objects with ClickDetectors matching our settings
-                for _, v in pairs(workspace:GetDescendants()) do
-                    if not magpieActive then break end
-                    
-                    -- Safety Check: Ignore Pets (which also have Gold/Silver variants)
-                    -- We check if the object or its parent is likely a pet
-                    local isPet = v.Name:match("Pet") or (v.Parent and v.Parent.Name:match("Pets")) or v:FindFirstChild("Humanoid")
-                    
-                    if not isPet then
-                        -- Check if object matches our filters
-                        local isSilver = config.CollectSilver and v.Name:find("Silver")
-                        local isRare = config.ShovelRare and (v.Name:find("Gold") or v.Name:find("Rainbow"))
-                        
-                        if isSilver or isRare then
-                            -- Look for ClickDetector inside the object
-                            local cd = v:FindFirstChildWhichIsA("ClickDetector", true)
-                            
-                            if cd then
-                                -- Fire the detector directly (No Teleport)
-                                fireclickdetector(cd)
-                                task.wait(0.1) -- Small delay to prevent crashes
-                            end
-                        end
+                iteration = iteration + 1
+                pcall(function()
+                    if iteration % 12 == 0 then
+                        rebuildSeedInventory(true)
                     end
-                end
-                
-                -- 3. Auto Sell
-                if config.AutoSell then
-                    -- Check if backpack is full
-                    -- local backpack = game.Players.LocalPlayer.Backpack
-                    -- if #backpack:GetChildren() >= MaxSlots then
-                    --     -- Teleport to sell area
-                    -- end
-                end
-                
-                wait(1)
+
+                    plantSelectedSeeds()
+                    harvestMatchingPlants()
+
+                    if iteration % 6 == 0 then
+                        rebuildFruitInventory(true)
+                    end
+
+                    autoSellIfNeeded()
+                end)
+                task.wait(0.35)
             end
         end)
     else
