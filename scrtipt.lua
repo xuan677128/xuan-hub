@@ -25,7 +25,6 @@ end
 
 local GameEvents = ReplicatedStorage:WaitForChild("GameEvents", 5)
 local FarmFolder = workspace:FindFirstChild("Farm") or workspace:WaitForChild("Farm", 5)
-local PlantEvent = GameEvents and GameEvents:FindFirstChild("Plant_RE")
 local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
 local BuySeedEvent = GameEvents and GameEvents:FindFirstChild("BuySeedStock")
 
@@ -906,76 +905,136 @@ InventoryButtonsLayout.FillDirection = Enum.FillDirection.Vertical
 InventoryButtonsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 InventoryButtonsLayout.Parent = InventoryButtons
 
--- Magpie: Inventory List (Top Left)
-local InvLabel = Instance.new("TextLabel")
-InvLabel.Text = "Available Seeds"
-InvLabel.Size = UDim2.new(0.45, 0, 0, 20)
-InvLabel.Position = UDim2.new(0, 0, 0, 30)
-InvLabel.BackgroundTransparency = 1
-InvLabel.TextColor3 = THEME.SubText
-InvLabel.Font = Enum.Font.GothamBold
-InvLabel.TextSize = 12
-InvLabel.Parent = MagpieFrame
+-- Magpie: Modern Header
+local MagpieTitle = Instance.new("TextLabel")
+MagpieTitle.Text = "Magpie Automation"
+MagpieTitle.Size = UDim2.new(0.6, 0, 0, 32)
+MagpieTitle.Position = UDim2.new(0, 0, 0, 28)
+MagpieTitle.BackgroundTransparency = 1
+MagpieTitle.TextColor3 = THEME.Text
+MagpieTitle.Font = Enum.Font.GothamBold
+MagpieTitle.TextSize = 22
+MagpieTitle.TextXAlignment = Enum.TextXAlignment.Left
+MagpieTitle.Parent = MagpieFrame
 
-local InvScroll = Instance.new("ScrollingFrame")
-InvScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
-InvScroll.Position = UDim2.new(0, 0, 0, 50)
-InvScroll.BackgroundColor3 = THEME.Item
-InvScroll.ScrollBarThickness = 2
-InvScroll.Parent = MagpieFrame
-local InvLayout = Instance.new("UIListLayout")
-InvLayout.Parent = InvScroll
+local MagpieSubtitle = Instance.new("TextLabel")
+MagpieSubtitle.Text = "Automatically harvest fruits, shovel rares, and sell hauls while you relax."
+MagpieSubtitle.Size = UDim2.new(0.8, 0, 0, 20)
+MagpieSubtitle.Position = UDim2.new(0, 0, 0, 60)
+MagpieSubtitle.BackgroundTransparency = 1
+MagpieSubtitle.TextColor3 = THEME.SubText
+MagpieSubtitle.Font = Enum.Font.Gotham
+MagpieSubtitle.TextSize = 12
+MagpieSubtitle.TextXAlignment = Enum.TextXAlignment.Left
+MagpieSubtitle.Parent = MagpieFrame
 
--- Magpie: Team List (Top Right)
-local TeamLabel = Instance.new("TextLabel")
-TeamLabel.Text = "Selected Seeds (Max 8)"
-TeamLabel.Size = UDim2.new(0.45, 0, 0, 20)
-TeamLabel.Position = UDim2.new(0.55, 0, 0, 30)
-TeamLabel.BackgroundTransparency = 1
-TeamLabel.TextColor3 = THEME.SubText
-TeamLabel.Font = Enum.Font.GothamBold
-TeamLabel.TextSize = 12
-TeamLabel.Parent = MagpieFrame
+-- Magpie: Fruit Inventory Card
+local FruitCard = Instance.new("Frame")
+FruitCard.Size = UDim2.new(0.58, 0, 0.7, 0)
+FruitCard.Position = UDim2.new(0, 0, 0, 90)
+FruitCard.BackgroundColor3 = THEME.Item
+FruitCard.Parent = MagpieFrame
+local FruitCardCorner = Instance.new("UICorner")
+FruitCardCorner.CornerRadius = UDim.new(0, 10)
+FruitCardCorner.Parent = FruitCard
+local FruitCardPadding = Instance.new("UIPadding")
+FruitCardPadding.PaddingTop = UDim.new(0, 12)
+FruitCardPadding.PaddingLeft = UDim.new(0, 12)
+FruitCardPadding.PaddingRight = UDim.new(0, 12)
+FruitCardPadding.PaddingBottom = UDim.new(0, 12)
+FruitCardPadding.Parent = FruitCard
 
-local TeamScroll = Instance.new("ScrollingFrame")
-TeamScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
-TeamScroll.Position = UDim2.new(0.55, 0, 0, 50)
-TeamScroll.BackgroundColor3 = THEME.Item
-TeamScroll.ScrollBarThickness = 2
-TeamScroll.Parent = MagpieFrame
-local TeamLayout = Instance.new("UIListLayout")
-TeamLayout.Parent = TeamScroll
-
--- Magpie: Fruit Inventory (Bottom Left)
 local FruitLabel = Instance.new("TextLabel")
 FruitLabel.Text = "Fruit Inventory"
-FruitLabel.Size = UDim2.new(0.45, 0, 0, 20)
-FruitLabel.Position = UDim2.new(0, 0, 0.45, 0)
+FruitLabel.Size = UDim2.new(1, 0, 0, 24)
 FruitLabel.BackgroundTransparency = 1
-FruitLabel.TextColor3 = THEME.SubText
+FruitLabel.TextColor3 = THEME.Text
 FruitLabel.Font = Enum.Font.GothamBold
-FruitLabel.TextSize = 12
-FruitLabel.Parent = MagpieFrame
+FruitLabel.TextSize = 14
+FruitLabel.TextXAlignment = Enum.TextXAlignment.Left
+FruitLabel.Parent = FruitCard
 
 local FruitScroll = Instance.new("ScrollingFrame")
-FruitScroll.Size = UDim2.new(0.45, 0, 0.35, 0)
-FruitScroll.Position = UDim2.new(0, 0, 0.45, 20)
-FruitScroll.BackgroundColor3 = THEME.Item
-FruitScroll.ScrollBarThickness = 2
-FruitScroll.Parent = MagpieFrame
+FruitScroll.Size = UDim2.new(1, 0, 1, -36)
+FruitScroll.Position = UDim2.new(0, 0, 0, 34)
+FruitScroll.BackgroundColor3 = THEME.Sidebar
+FruitScroll.ScrollBarThickness = 3
+FruitScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+FruitScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+FruitScroll.Parent = FruitCard
+local FruitScrollCorner = Instance.new("UICorner")
+FruitScrollCorner.CornerRadius = UDim.new(0, 8)
+FruitScrollCorner.Parent = FruitScroll
 local FruitLayout = Instance.new("UIListLayout")
+FruitLayout.Padding = UDim.new(0, 4)
 FruitLayout.Parent = FruitScroll
 
--- Toggles Container (Bottom Right)
+-- Magpie: Automation Panel
+local AutomationPanel = Instance.new("Frame")
+AutomationPanel.Size = UDim2.new(0.38, 0, 0.7, 0)
+AutomationPanel.Position = UDim2.new(0.62, 0, 0, 90)
+AutomationPanel.BackgroundColor3 = THEME.Item
+AutomationPanel.Parent = MagpieFrame
+local AutomationCorner = Instance.new("UICorner")
+AutomationCorner.CornerRadius = UDim.new(0, 10)
+AutomationCorner.Parent = AutomationPanel
+local AutomationPadding = Instance.new("UIPadding")
+AutomationPadding.PaddingTop = UDim.new(0, 12)
+AutomationPadding.PaddingLeft = UDim.new(0, 12)
+AutomationPadding.PaddingRight = UDim.new(0, 12)
+AutomationPadding.PaddingBottom = UDim.new(0, 12)
+AutomationPadding.Parent = AutomationPanel
+
+local AutomationHeader = Instance.new("TextLabel")
+AutomationHeader.Text = "Automation Controls"
+AutomationHeader.Size = UDim2.new(1, 0, 0, 22)
+AutomationHeader.BackgroundTransparency = 1
+AutomationHeader.TextColor3 = THEME.Text
+AutomationHeader.Font = Enum.Font.GothamBold
+AutomationHeader.TextSize = 14
+AutomationHeader.TextXAlignment = Enum.TextXAlignment.Left
+AutomationHeader.Parent = AutomationPanel
+
+local AutomationSub = Instance.new("TextLabel")
+AutomationSub.Text = "Flip the switches you need, then hit Launch to begin harvesting."
+AutomationSub.Size = UDim2.new(1, 0, 0, 32)
+AutomationSub.BackgroundTransparency = 1
+AutomationSub.TextColor3 = THEME.SubText
+AutomationSub.Font = Enum.Font.Gotham
+AutomationSub.TextWrapped = true
+AutomationSub.TextSize = 12
+AutomationSub.TextXAlignment = Enum.TextXAlignment.Left
+AutomationSub.Parent = AutomationPanel
+
+local AutomationStatusLabel = Instance.new("TextLabel")
+AutomationStatusLabel.Size = UDim2.new(1, 0, 0, 30)
+AutomationStatusLabel.BackgroundTransparency = 1
+AutomationStatusLabel.Text = "Status: Idle"
+AutomationStatusLabel.TextColor3 = THEME.SubText
+AutomationStatusLabel.Font = Enum.Font.GothamBold
+AutomationStatusLabel.TextSize = 12
+AutomationStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+AutomationStatusLabel.Parent = AutomationPanel
+
 local ToggleContainer = Instance.new("Frame")
-ToggleContainer.Size = UDim2.new(0.45, 0, 0.35, 0)
-ToggleContainer.Position = UDim2.new(0.55, 0, 0.45, 20)
+ToggleContainer.Size = UDim2.new(1, 0, 1, -110)
+ToggleContainer.Position = UDim2.new(0, 0, 0, 96)
 ToggleContainer.BackgroundTransparency = 1
-ToggleContainer.Parent = MagpieFrame
+ToggleContainer.Parent = AutomationPanel
 
 local ToggleLayout = Instance.new("UIListLayout")
 ToggleLayout.Padding = UDim.new(0, 5)
+ToggleLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ToggleLayout.Parent = ToggleContainer
+
+local function setAutomationStatus(text, color)
+    if AutomationStatusLabel then
+        AutomationStatusLabel.Text = "Status: " .. text
+        AutomationStatusLabel.TextColor3 = color or THEME.SubText
+    end
+end
+
+setAutomationStatus("Idle", THEME.SubText)
 
 local function createMagpieToggle(text, default, callback)
     local btn = Instance.new("TextButton")
@@ -1002,16 +1061,24 @@ local function createMagpieToggle(text, default, callback)
 end
 
 -- Magpie Logic Variables
-local mySeeds = {}
 local myFruits = {}
-local seedLookup = {}
-local selectedTeam = {}
 local magpieActive = false
-local config = {
+local CONFIG_VERSION = 2
+local CONFIG_DEFAULTS = {
     CollectSilver = false,
     ShovelRare = false,
     AutoSell = false
 }
+
+local function cloneConfigDefaults()
+    local copy = {}
+    for key, value in pairs(CONFIG_DEFAULTS) do
+        copy[key] = value
+    end
+    return copy
+end
+
+local config = cloneConfigDefaults()
 
 local seedShopData = {}
 local seedShopLookup = {}
@@ -1023,8 +1090,7 @@ local AutoBuyAllButton = nil
 
 local farmData = {
     PlantLocations = nil,
-    PlantsPhysical = nil,
-    Spots = {}
+    PlantsPhysical = nil
 }
 
 local SELL_THRESHOLD = 25
@@ -1035,9 +1101,15 @@ local GARDEN_FILE = "XuanHub/GrowAgarden.json"
 local HttpService = game:GetService("HttpService")
 
 local function saveGardenConfig()
+    local configSnapshot = {}
+    for key in pairs(CONFIG_DEFAULTS) do
+        local value = config[key]
+        configSnapshot[key] = typeof(value) == "boolean" and value or CONFIG_DEFAULTS[key]
+    end
+
     local data = {
-        Team = selectedTeam,
-        Config = config
+        Config = configSnapshot,
+        ConfigVersion = CONFIG_VERSION
     }
     if writefile then
         writefile(GARDEN_FILE, HttpService:JSONEncode(data))
@@ -1050,20 +1122,15 @@ local function loadGardenConfig()
         return HttpService:JSONDecode(readfile(GARDEN_FILE))
     end)
     if not success then return end
-    if typeof(result.Team) == "table" then
-        selectedTeam = {}
-        for _, entry in ipairs(result.Team) do
-            if typeof(entry) == "string" then
-                table.insert(selectedTeam, entry)
-            elseif typeof(entry) == "table" and entry.Name then
-                table.insert(selectedTeam, entry.Name)
-            end
-        end
+    for key, value in pairs(CONFIG_DEFAULTS) do
+        config[key] = value
     end
-    if typeof(result.Config) == "table" then
-        for k, v in pairs(result.Config) do
-            if config[k] ~= nil then
-                config[k] = v
+
+    if typeof(result.Config) == "table" and result.ConfigVersion == CONFIG_VERSION then
+        for key in pairs(CONFIG_DEFAULTS) do
+            local stored = result.Config[key]
+            if typeof(stored) == "boolean" then
+                config[key] = stored
             end
         end
     end
@@ -1100,106 +1167,6 @@ local function renderFruitList()
         label.TextSize = 11
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = frame
-    end
-end
-
-local function refreshMagpieUI()
-    for _, v in pairs(InvScroll:GetChildren()) do
-        if v:IsA("TextButton") then
-            v:Destroy()
-        end
-    end
-    for _, v in pairs(TeamScroll:GetChildren()) do
-        if v:IsA("TextButton") then
-            v:Destroy()
-        end
-    end
-
-    for _, seed in ipairs(mySeeds) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 24)
-        btn.BackgroundColor3 = THEME.Sidebar
-        btn.Text = string.format("%s (%d)", seed.Name or "Seed", seed.Count or 0)
-        btn.TextColor3 = THEME.Text
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 11
-        btn.Parent = InvScroll
-
-        btn.MouseButton1Click:Connect(function()
-            if table.find(selectedTeam, seed.Name) then
-                notify("Already selected", THEME.Sidebar)
-                return
-            end
-            if #selectedTeam >= 8 then
-                notify("Team Full (Max 8)", THEME.Red)
-                return
-            end
-            table.insert(selectedTeam, seed.Name)
-            saveGardenConfig()
-            refreshMagpieUI()
-        end)
-    end
-
-    for index, seedName in ipairs(selectedTeam) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 24)
-        btn.BackgroundColor3 = THEME.Accent
-        btn.Text = string.format("%s (%d)", seedName, seedLookup[seedName] and seedLookup[seedName].Count or 0)
-        btn.TextColor3 = Color3.new(1, 1, 1)
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 11
-        btn.Parent = TeamScroll
-
-        btn.MouseButton1Click:Connect(function()
-            table.remove(selectedTeam, index)
-            saveGardenConfig()
-            refreshMagpieUI()
-        end)
-    end
-
-    renderFruitList()
-end
-
-local function scanSeedsFromContainer(container, bucket)
-    for _, tool in ipairs(container:GetChildren()) do
-        if tool:IsA("Tool") then
-            local plantName = tool:FindFirstChild("Plant_Name")
-            local numbers = tool:FindFirstChild("Numbers")
-            if plantName and numbers then
-                local seedName = plantName.Value
-                local entry = bucket[seedName]
-                if not entry then
-                    entry = {Name = seedName, Count = 0, Tool = tool}
-                    bucket[seedName] = entry
-                end
-                entry.Count = numbers.Value
-                entry.Tool = tool
-            end
-        end
-    end
-end
-
-local function rebuildSeedInventory(refreshUI)
-    local aggregate = {}
-    scanSeedsFromContainer(Backpack, aggregate)
-    local character = getCharacter()
-    if character then
-        scanSeedsFromContainer(character, aggregate)
-    end
-
-    mySeeds = {}
-    seedLookup = {}
-    for name, data in pairs(aggregate) do
-        seedLookup[name] = data
-        table.insert(mySeeds, {Name = name, Count = data.Count})
-    end
-
-    table.sort(mySeeds, function(a, b)
-        return a.Name < b.Name
-    end)
-
-    if refreshUI then
-        refreshMagpieUI()
     end
 end
 
@@ -1367,7 +1334,6 @@ local function runPurchaseOrders(orders, statusText, successText)
         end
         inventoryBusy = false
         setInventoryStatus(successText or "Purchase complete!", THEME.Green)
-        rebuildSeedInventory(true)
         task.delay(0.3, function()
             refreshInventoryList()
         end)
@@ -1527,24 +1493,6 @@ local function resolveFarm()
     end
 end
 
-local function rebuildPlantSpots()
-    farmData.Spots = {}
-    if not farmData.PlantLocations then return end
-    for _, plot in ipairs(farmData.PlantLocations:GetChildren()) do
-        if plot:IsA("BasePart") then
-            local cf = plot.CFrame
-            local size = plot.Size
-            local step = math.max(2, math.floor(math.min(size.X, size.Z) / 6))
-            for x = -size.X / 2, size.X / 2, step do
-                for z = -size.Z / 2, size.Z / 2, step do
-                    local worldPoint = (cf * CFrame.new(x, 0.1, z)).Position
-                    table.insert(farmData.Spots, worldPoint)
-                end
-            end
-        end
-    end
-end
-
 local function variantAllowed(variant)
     if not variant or variant == "" then
         return config.CollectSilver
@@ -1573,40 +1521,7 @@ local function harvestMatchingPlants()
     end
 end
 
-local PlantEvent = GameEvents and GameEvents:FindFirstChild("Plant_RE")
 local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
-
-local function plantSelectedSeeds()
-    if not PlantEvent or #selectedTeam == 0 then return end
-    if #farmData.Spots == 0 then
-        resolveFarm()
-        rebuildPlantSpots()
-    end
-    if #farmData.Spots == 0 then return end
-
-    local spotIndex = 1
-    for _, seedName in ipairs(selectedTeam) do
-        local details = seedLookup[seedName]
-        if details and details.Tool and details.Count and details.Count > 0 then
-            local character = getCharacter()
-            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid:EquipTool(details.Tool)
-            end
-
-            local toPlant = math.min(details.Count, #farmData.Spots)
-            for _ = 1, toPlant do
-                local position = farmData.Spots[spotIndex]
-                PlantEvent:FireServer(position, seedName)
-                spotIndex = spotIndex + 1
-                if spotIndex > #farmData.Spots then
-                    spotIndex = 1
-                end
-                task.wait(0.05)
-            end
-        end
-    end
-end
 
 local function countCrops()
     local total = 0
@@ -1654,17 +1569,17 @@ end
 
 loadGardenConfig()
 
-createMagpieToggle("Auto Collect Silver", config.CollectSilver, function(state)
+createMagpieToggle("Auto Harvest Fruits", config.CollectSilver, function(state)
     config.CollectSilver = state
     saveGardenConfig()
 end)
 
-createMagpieToggle("Auto Shovel Gold/Rainbow", config.ShovelRare, function(state)
+createMagpieToggle("Auto Shovel Rare Variants", config.ShovelRare, function(state)
     config.ShovelRare = state
     saveGardenConfig()
 end)
 
-createMagpieToggle("Auto Sell", config.AutoSell, function(state)
+createMagpieToggle("Auto Sell Backpack", config.AutoSell, function(state)
     config.AutoSell = state
     saveGardenConfig()
 end)
@@ -1672,8 +1587,6 @@ end)
 local function loadInventory()
     loadGardenConfig()
     resolveFarm()
-    rebuildPlantSpots()
-    rebuildSeedInventory(true)
     rebuildFruitInventory(true)
 end
 
@@ -1697,9 +1610,9 @@ LaunchBtn.MouseButton1Click:Connect(function()
         LaunchBtn.Text = "STOP MAGPIE"
         LaunchBtn.BackgroundColor3 = THEME.Red
         notify("Magpie Method Started!", THEME.Green)
+        setAutomationStatus("Running", THEME.Green)
         resolveFarm()
-        rebuildPlantSpots()
-        rebuildSeedInventory(true)
+        rebuildSeedInventory()
         rebuildFruitInventory(true)
 
         task.spawn(function()
@@ -1708,10 +1621,9 @@ LaunchBtn.MouseButton1Click:Connect(function()
                 iteration = iteration + 1
                 pcall(function()
                     if iteration % 12 == 0 then
-                        rebuildSeedInventory(true)
+                        rebuildSeedInventory()
                     end
 
-                    plantSelectedSeeds()
                     harvestMatchingPlants()
 
                     if iteration % 6 == 0 then
@@ -1727,6 +1639,7 @@ LaunchBtn.MouseButton1Click:Connect(function()
         LaunchBtn.Text = "LAUNCH MAGPIE"
         LaunchBtn.BackgroundColor3 = THEME.Green
         notify("Magpie Method Stopped", THEME.Red)
+        setAutomationStatus("Idle", THEME.SubText)
     end
 end)
 
