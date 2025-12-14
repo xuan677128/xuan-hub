@@ -928,51 +928,10 @@ MagpieSubtitle.TextSize = 12
 MagpieSubtitle.TextXAlignment = Enum.TextXAlignment.Left
 MagpieSubtitle.Parent = MagpieFrame
 
--- Magpie: Fruit Inventory Card
-local FruitCard = Instance.new("Frame")
-FruitCard.Size = UDim2.new(0.58, 0, 0.7, 0)
-FruitCard.Position = UDim2.new(0, 0, 0, 85)
-FruitCard.BackgroundColor3 = THEME.Item
-FruitCard.Parent = MagpieFrame
-local FruitCardCorner = Instance.new("UICorner")
-FruitCardCorner.CornerRadius = UDim.new(0, 10)
-FruitCardCorner.Parent = FruitCard
-local FruitCardPadding = Instance.new("UIPadding")
-FruitCardPadding.PaddingTop = UDim.new(0, 12)
-FruitCardPadding.PaddingLeft = UDim.new(0, 12)
-FruitCardPadding.PaddingRight = UDim.new(0, 12)
-FruitCardPadding.PaddingBottom = UDim.new(0, 12)
-FruitCardPadding.Parent = FruitCard
-
-local FruitLabel = Instance.new("TextLabel")
-FruitLabel.Text = "Fruit Inventory"
-FruitLabel.Size = UDim2.new(1, 0, 0, 24)
-FruitLabel.BackgroundTransparency = 1
-FruitLabel.TextColor3 = THEME.Text
-FruitLabel.Font = Enum.Font.GothamBold
-FruitLabel.TextSize = 14
-FruitLabel.TextXAlignment = Enum.TextXAlignment.Left
-FruitLabel.Parent = FruitCard
-
-local FruitScroll = Instance.new("ScrollingFrame")
-FruitScroll.Size = UDim2.new(1, 0, 1, -36)
-FruitScroll.Position = UDim2.new(0, 0, 0, 34)
-FruitScroll.BackgroundColor3 = THEME.Sidebar
-FruitScroll.ScrollBarThickness = 3
-FruitScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-FruitScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-FruitScroll.Parent = FruitCard
-local FruitScrollCorner = Instance.new("UICorner")
-FruitScrollCorner.CornerRadius = UDim.new(0, 8)
-FruitScrollCorner.Parent = FruitScroll
-local FruitLayout = Instance.new("UIListLayout")
-FruitLayout.Padding = UDim.new(0, 4)
-FruitLayout.Parent = FruitScroll
-
 -- Magpie: Automation Panel
 local AutomationPanel = Instance.new("Frame")
-AutomationPanel.Size = UDim2.new(0.38, 0, 0.7, 0)
-AutomationPanel.Position = UDim2.new(0.62, 0, 0, 85)
+AutomationPanel.Size = UDim2.new(1, 0, 0.7, 0)
+AutomationPanel.Position = UDim2.new(0, 0, 0, 85)
 AutomationPanel.BackgroundColor3 = THEME.Item
 AutomationPanel.Parent = MagpieFrame
 local AutomationCorner = Instance.new("UICorner")
@@ -1008,6 +967,7 @@ AutomationSub.Parent = AutomationPanel
 
 local AutomationStatusLabel = Instance.new("TextLabel")
 AutomationStatusLabel.Size = UDim2.new(1, 0, 0, 30)
+AutomationStatusLabel.Position = UDim2.new(0, 0, 1, -80) -- Positioned above the launch button
 AutomationStatusLabel.BackgroundTransparency = 1
 AutomationStatusLabel.Text = "Status: Idle"
 AutomationStatusLabel.TextColor3 = THEME.SubText
@@ -1015,17 +975,6 @@ AutomationStatusLabel.Font = Enum.Font.GothamBold
 AutomationStatusLabel.TextSize = 12
 AutomationStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 AutomationStatusLabel.Parent = AutomationPanel
-
-local ToggleContainer = Instance.new("Frame")
-ToggleContainer.Size = UDim2.new(1, 0, 1, -110)
-ToggleContainer.Position = UDim2.new(0, 0, 0, 96)
-ToggleContainer.BackgroundTransparency = 1
-ToggleContainer.Parent = AutomationPanel
-
-local ToggleLayout = Instance.new("UIListLayout")
-ToggleLayout.Padding = UDim.new(0, 5)
-ToggleLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ToggleLayout.Parent = ToggleContainer
 
 local function setAutomationStatus(text, color)
     if AutomationStatusLabel then
@@ -1036,38 +985,13 @@ end
 
 setAutomationStatus("Idle", THEME.SubText)
 
-local function createMagpieToggle(text, default, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 30)
-    btn.BackgroundColor3 = THEME.Sidebar
-    btn.Text = text .. ": " .. (default and "ON" or "OFF")
-    btn.TextColor3 = default and THEME.Green or THEME.Red
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 10 -- Smaller text to fit
-    btn.Parent = ToggleContainer
-    
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 6)
-    c.Parent = btn
-    
-    local state = default
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        btn.Text = text .. ": " .. (state and "ON" or "OFF")
-        btn.TextColor3 = state and THEME.Green or THEME.Red
-        callback(state)
-    end)
-    return state
-end
-
 -- Magpie Logic Variables
-local myFruits = {}
 local magpieActive = false
 local CONFIG_VERSION = 2
 local CONFIG_DEFAULTS = {
-    CollectSilver = false,
-    ShovelRare = false,
-    AutoSell = false
+    CollectSilver = true,
+    ShovelRare = true,
+    AutoSell = true
 }
 
 local function cloneConfigDefaults()
@@ -1133,66 +1057,6 @@ local function loadGardenConfig()
                 config[key] = stored
             end
         end
-    end
-end
-
-local function renderFruitList()
-    for _, child in pairs(FruitScroll:GetChildren()) do
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
-    end
-
-    local fruitArray = {}
-    for name, count in pairs(myFruits) do
-        table.insert(fruitArray, {Name = name, Count = count})
-    end
-    table.sort(fruitArray, function(a, b)
-        return a.Name < b.Name
-    end)
-
-    for _, fruit in ipairs(fruitArray) do
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(1, 0, 0, 22)
-        frame.BackgroundTransparency = 1
-        frame.Parent = FruitScroll
-
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, -10, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = string.format("%s: %d", fruit.Name, fruit.Count)
-        label.TextColor3 = THEME.Text
-        label.Font = Enum.Font.Gotham
-        label.TextSize = 11
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = frame
-    end
-end
-
-local function collectFruitsFromContainer(container, bucket)
-    for _, tool in ipairs(container:GetChildren()) do
-        if tool:IsA("Tool") then
-            local fruitName = tool:FindFirstChild("Item_String")
-            if fruitName then
-                local key = fruitName.Value or tool.Name
-                bucket[key] = (bucket[key] or 0) + 1
-            end
-        end
-    end
-end
-
-local function rebuildFruitInventory(refreshUI)
-    local bucket = {}
-    collectFruitsFromContainer(Backpack, bucket)
-    local character = getCharacter()
-    if character then
-        collectFruitsFromContainer(character, bucket)
-    end
-
-    myFruits = bucket
-    if refreshUI then
-        renderFruitList()
     end
 end
 
@@ -1569,25 +1433,9 @@ end
 
 loadGardenConfig()
 
-createMagpieToggle("Auto Harvest Fruits", config.CollectSilver, function(state)
-    config.CollectSilver = state
-    saveGardenConfig()
-end)
-
-createMagpieToggle("Auto Shovel Rare Variants", config.ShovelRare, function(state)
-    config.ShovelRare = state
-    saveGardenConfig()
-end)
-
-createMagpieToggle("Auto Sell Backpack", config.AutoSell, function(state)
-    config.AutoSell = state
-    saveGardenConfig()
-end)
-
 local function loadInventory()
     loadGardenConfig()
     resolveFarm()
-    rebuildFruitInventory(true)
 end
 
 -- Launch Button
@@ -1612,7 +1460,6 @@ LaunchBtn.MouseButton1Click:Connect(function()
         notify("Magpie Method Started!", THEME.Green)
         setAutomationStatus("Running", THEME.Green)
         resolveFarm()
-        rebuildFruitInventory(true)
 
         task.spawn(function()
             local iteration = 0
@@ -1620,10 +1467,6 @@ LaunchBtn.MouseButton1Click:Connect(function()
                 iteration = iteration + 1
                 pcall(function()
                     harvestMatchingPlants()
-
-                    if iteration % 6 == 0 then
-                        rebuildFruitInventory(true)
-                    end
 
                     autoSellIfNeeded()
                 end)
