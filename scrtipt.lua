@@ -1358,18 +1358,31 @@ local function resolveFarm()
 end
 
 local function variantAllowed(variant)
+    -- Only collect fruits with variants: Gold, Rainbow, or Silver
     if not variant or variant == "" then
-        return true -- Always collect silver/normal
+        return false -- Skip normal fruits (no variant)
     end
+    
     local lower = variant:lower()
-    if lower:find("rainbow") or lower:find("gold") then
-        return true -- Always collect rainbow and gold
+    
+    -- Check for specific variants we want
+    if lower:find("gold") or lower:find("rainbow") or lower:find("silver") then
+        return true
     end
-    return true -- Default to collecting everything else
+    
+    -- Skip everything else
+    return false
 end
 
 local function harvestMatchingPlants()
     if not farmData.PlantsPhysical then return end
+    
+    -- Stop harvesting if inventory is full
+    if countCrops() >= SELL_THRESHOLD then
+        return
+    end
+    
+    -- Collect all harvestable plants regardless of player position
     for _, descendant in ipairs(farmData.PlantsPhysical:GetDescendants()) do
         if descendant:IsA("Model") then
             local variantValue = descendant:FindFirstChild("Variant")
@@ -1377,7 +1390,10 @@ local function harvestMatchingPlants()
             if variantAllowed(variant) then
                 local prompt = descendant:FindFirstChildWhichIsA("ProximityPrompt", true)
                 if prompt and prompt.Enabled then
-                    fireproximityprompt(prompt)
+                    -- Force trigger prompt regardless of distance or player position
+                    pcall(function()
+                        fireproximityprompt(prompt)
+                    end)
                     task.wait(0.03)
                 end
             end
@@ -1404,24 +1420,122 @@ local function countCrops()
     return total
 end
 
+local function findSellButton()
+    -- Find the SELL button in PlayerGui
+    for _, gui in ipairs(PlayerGui:GetDescendants()) do
+        if gui:IsA("TextButton") and gui.Text and gui.Text:upper():find("SELL") and gui.Visible then
+            return gui
+        end
+    end
+    return nil
+end
+
+local function clickDialogOption(optionText)
+    -- Find and click dialog option by text
+    task.wait(0.3)
+    for _, gui in ipairs(PlayerGui:GetDescendants()) do
+        if gui:IsA("TextButton") and gui.Text and gui.Text:find(optionText) and gui.Visible then
+            -- Simulate click using various methods
+            pcall(function()
+                for _, connection in pairs(getconnections(gui.MouseButton1Click)) do
+                    connection:Fire()
+                end
+            end)
+            pcall(function()
+                firesignal(gui.MouseButton1Click)
+            end)
+            return true
+        end
+    end
+    return false
+end
+
 local function sellInventory()
-    if isSelling or not SellEvent then return end
-    local character = getCharacter()
-    if not (character and character.PrimaryPart) then return end
-
+    if isSelling then return end
+    if countCrops() == 0 then return end
+    
     isSelling = true
-    local previous = character.PrimaryPart.CFrame
-    character:PivotTo(SELL_POINT)
-    task.wait(0.25)
-
-    local attempts = 0
-    while countCrops() > 0 and attempts < 50 do
-        SellEvent:FireServer()
-        attempts = attempts + 1
-        task.wait(0.15)
+    local character = getCharacter()
+    if not (character and character.PrimaryPart) then 
+        isSelling = false
+        return 
     end
 
-    character:PivotTo(previous)
+    -- Save current position
+    local previousPosition = character.PrimaryPart.CFrame
+    
+    -- Step 1: Click the SELL button to teleport
+    local sellBtn = findSellButton()
+    if sellBtn then
+        pcall(function()
+            for _, connection in pairs(getconnections(sellBtn.MouseButton1Click)) do
+                connection:Fire()
+            end
+        end)
+        task.wait(1) -- Wait for teleport
+    else
+        -- Fallback to manual teleport if button not found
+        character:PivotTo(SELL_POINT)
+        task.wait(0.5)
+    end
+    
+    -- Step 2: Click "Tap to talk" or proximity prompt
+    local talkClicked = false
+    for i = 1, 10 do
+        if clickDialogOption("Tap to talk") or clickDialogOption("Talk") then
+            talkClicked = true
+            break
+        end
+        -- Try to find and trigger proximity prompt
+        local npc = workspace:FindFirstChild("NPCs") or workspace
+        for _, obj in ipairs(npc:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") and obj.Enabled then
+                fireproximityprompt(obj)
+                talkClicked = true
+                break
+            end
+        end
+        if talkClicked then break end
+        task.wait(0.2)
+    end
+    
+    task.wait(0.5)
+    
+    -- Step 3: Click "I want to sell my inventory"
+    local soldSuccessfully = false
+    for i = 1, 15 do
+        if clickDialogOption("I want to sell my inventory") or clickDialogOption("sell my inventory") then
+            soldSuccessfully = true
+            task.wait(0.5)
+            break
+        end
+        task.wait(0.2)
+    end
+    
+    -- Wait for selling to complete
+    if soldSuccessfully or SellEvent then
+        local attempts = 0
+        local initialCount = countCrops()
+        while countCrops() > 0 and attempts < 30 do
+            if SellEvent then
+                SellEvent:FireServer()
+            end
+            attempts = attempts + 1
+            task.wait(0.2)
+            -- Break if inventory decreased (selling is working)
+            if countCrops() < initialCount then
+                task.wait(1) -- Wait a bit more for full sale
+                break
+            end
+        end
+    end
+    
+    -- Step 4: Return to previous position
+    task.wait(0.3)
+    if character and character.PrimaryPart then
+        character:PivotTo(previousPosition)
+    end
+    
     isSelling = false
 end
 
@@ -1470,7 +1584,7 @@ LaunchBtn.MouseButton1Click:Connect(function()
 
                     autoSellIfNeeded()
                 end)
-                task.wait(0.5)
+                task.wait(0.1)
             end
         end)
     else
