@@ -1359,13 +1359,13 @@ end
 
 local function variantAllowed(variant)
     if not variant or variant == "" then
-        return config.CollectSilver
+        return true -- Always collect silver/normal
     end
     local lower = variant:lower()
     if lower:find("rainbow") or lower:find("gold") then
-        return config.ShovelRare
+        return true -- Always collect rainbow and gold
     end
-    return config.CollectSilver
+    return true -- Default to collecting everything else
 end
 
 local function harvestMatchingPlants()
@@ -1470,7 +1470,7 @@ LaunchBtn.MouseButton1Click:Connect(function()
 
                     autoSellIfNeeded()
                 end)
-                task.wait(0.35)
+                task.wait(0.5)
             end
         end)
     else
