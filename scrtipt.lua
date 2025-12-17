@@ -29,6 +29,12 @@ local FarmFolder = workspace:FindFirstChild("Farm") or workspace:WaitForChild("F
 local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
 local BuySeedEvent = GameEvents and GameEvents:FindFirstChild("BuySeedStock")
 
+-- Singleton Protection: Prevent multiple instances
+if game.CoreGui:FindFirstChild("XuanHubUI") then
+    warn("XuanHub is already running!")
+    return
+end
+
 -- Internal Auto Execution
 pcall(function()
     local autoFiles = listfiles(AUTOEXEC_DIR)
@@ -36,10 +42,17 @@ pcall(function()
         writefile(AUTOEXEC_DIR .. "/default.txt", "-- Put code here to run when XuanHub loads")
     end
     
-    for _, file in pairs(listfiles(AUTOEXEC_DIR)) do
+    for _, file in pairs(autoFiles) do
         if file:match("%.txt$") or file:match("%.lua$") then
-            spawn(function()
-                loadstring(readfile(file))()
+            pcall(function()
+                spawn(function()
+                    local success, err = pcall(function()
+                        loadstring(readfile(file))()
+                    end)
+                    if not success then
+                        warn("AutoExec error in " .. file .. ": " .. tostring(err))
+                    end
+                end)
             end)
         end
     end
