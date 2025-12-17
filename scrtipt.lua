@@ -1,3 +1,4 @@
+
 -- Xuan Hub - Modern Sidebar UI (Remastered)
 -- Services
 local UIS = game:GetService("UserInputService")
@@ -659,47 +660,31 @@ createUtilBtn("Server Hop (Public)", function()
     TPS:TeleportToPlaceInstance(_place, Server.id, game.Players.LocalPlayer)
 end)
 
--- Anti-AFK
-local antiAfkEnabled = false
-createUtilBtn("Enable Anti-AFK", function()
-    if not antiAfkEnabled then
-        antiAfkEnabled = true
-        notify("Anti-AFK Enabled!", THEME.Green)
-        
-        local vu = game:GetService("VirtualUser")
-        game:GetService("Players").LocalPlayer.Idled:Connect(function()
-            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            wait(1)
-            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        end)
-    else
-        notify("Anti-AFK Already Active", THEME.Sidebar)
-    end
+-- Anti-AFK (Auto-enabled)
+local antiAfkEnabled = true
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    wait(1)
+    vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- Auto Reconnect
-local autoRejoinEnabled = false
-createUtilBtn("Enable Auto Reconnect", function()
-    if not autoRejoinEnabled then
-        autoRejoinEnabled = true
-        notify("Auto Reconnect Enabled!", THEME.Green)
-        
-        spawn(function()
-            while wait(1) do
-                if autoRejoinEnabled then
-                    local success, err = pcall(function()
-                        game.CoreGui.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
-                            if child.Name == 'ErrorPrompt' and child:FindFirstChild('MessageArea') and child.MessageArea:FindFirstChild("ErrorFrame") then
-                                game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-                            end
-                        end)
-                    end)
-                end
-            end
-        end)
-    else
-        notify("Auto Reconnect Already Active", THEME.Sidebar)
-    end
+createUtilBtn("Anti-AFK (Enabled)", function()
+    notify("Anti-AFK is already enabled automatically!", THEME.Green)
+end)
+
+-- Auto Reconnect (Auto-enabled)
+local autoRejoinEnabled = true
+pcall(function()
+    game.CoreGui.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
+        if child.Name == 'ErrorPrompt' and child:FindFirstChild('MessageArea') and child.MessageArea:FindFirstChild("ErrorFrame") then
+            game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+        end
+    end)
+end)
+
+createUtilBtn("Auto Reconnect (Enabled)", function()
+    notify("Auto Reconnect is already enabled automatically!", THEME.Green)
 end)
 
 -- PAGE: About
@@ -731,72 +716,9 @@ AboutText.TextXAlignment = Enum.TextXAlignment.Left
 AboutText.TextYAlignment = Enum.TextYAlignment.Top
 AboutText.Parent = AboutContainer
 
--- PAGE: Garden
-local GardenPage = Instance.new("Frame")
-GardenPage.Size = UDim2.new(1, 0, 1, 0)
-GardenPage.BackgroundTransparency = 1
-GardenPage.Visible = false
-GardenPage.Parent = Content
+-- Garden automation functionality (UI removed, runs automatically)
 
--- Method Selection
-local MethodContainer = Instance.new("Frame")
-MethodContainer.Size = UDim2.new(1, 0, 1, 0)
-MethodContainer.BackgroundTransparency = 1
-MethodContainer.Parent = GardenPage
 
-local function createMethodBtn(name, color, position, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 200, 0, 50)
-    btn.Position = position
-    btn.BackgroundColor3 = color
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.Parent = MethodContainer
-    
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 8)
-    c.Parent = btn
-    
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- Magpie UI
-local MagpieFrame = Instance.new("Frame")
-MagpieFrame.Size = UDim2.new(1, 0, 1, 0)
-MagpieFrame.BackgroundTransparency = 1
-MagpieFrame.Visible = false
-MagpieFrame.Parent = GardenPage
-
-local MagpieBack = Instance.new("TextButton")
-MagpieBack.Size = UDim2.new(0, 60, 0, 25)
-MagpieBack.BackgroundColor3 = THEME.Sidebar
-MagpieBack.Text = "< Back"
-MagpieBack.TextColor3 = THEME.Text
-MagpieBack.Font = Enum.Font.GothamBold
-MagpieBack.TextSize = 12
-MagpieBack.Parent = MagpieFrame
-local MB_Corner = Instance.new("UICorner")
-MB_Corner.CornerRadius = UDim.new(0, 6)
-MB_Corner.Parent = MagpieBack
-
-MagpieBack.MouseButton1Click:Connect(function()
-    MagpieFrame.Visible = false
-    MethodContainer.Visible = true
-end)
-
--- Inventory UI (Seed Shop)
-local InventoryFrame = Instance.new("Frame")
-InventoryFrame.Size = UDim2.new(1, 0, 1, 0)
-InventoryFrame.BackgroundTransparency = 1
-InventoryFrame.Visible = false
-InventoryFrame.Parent = GardenPage
-
-local InventoryBack = Instance.new("TextButton")
-InventoryBack.Size = UDim2.new(0, 60, 0, 25)
-InventoryBack.BackgroundColor3 = THEME.Sidebar
-InventoryBack.Text = "< Back"
 InventoryBack.TextColor3 = THEME.Text
 InventoryBack.Font = Enum.Font.GothamBold
 InventoryBack.TextSize = 12
@@ -985,142 +907,15 @@ end
 
 setAutomationStatus("Idle", THEME.SubText)
 
--- Magpie Logic Variables
-local magpieActive = false
-local CONFIG_VERSION = 2
-local CONFIG_DEFAULTS = {
-    CollectSilver = true,
-    ShovelRare = true,
-    AutoSell = true
-}
 
-local function cloneConfigDefaults()
-    local copy = {}
-    for key, value in pairs(CONFIG_DEFAULTS) do
-        copy[key] = value
-    end
-    return copy
-end
 
-local config = cloneConfigDefaults()
 
-local seedShopData = {}
-local seedShopLookup = {}
-local selectedStockName = nil
-local inventoryBusy = false
-local autoBuyAllActive = false
-local autoBuyAllThread = nil
-local AutoBuyAllButton = nil
 
-local farmData = {
-    PlantLocations = nil,
-    PlantsPhysical = nil
-}
 
-local SELL_THRESHOLD = 25
-local SELL_POINT = CFrame.new(62, 4, -26)
-local isSelling = false
 
-local GARDEN_FILE = "XuanHub/GrowAgarden.json"
-local HttpService = game:GetService("HttpService")
 
-local function saveGardenConfig()
-    local configSnapshot = {}
-    for key in pairs(CONFIG_DEFAULTS) do
-        local value = config[key]
-        configSnapshot[key] = typeof(value) == "boolean" and value or CONFIG_DEFAULTS[key]
-    end
 
-    local data = {
-        Config = configSnapshot,
-        ConfigVersion = CONFIG_VERSION
-    }
-    if writefile then
-        writefile(GARDEN_FILE, HttpService:JSONEncode(data))
-    end
-end
 
-local function loadGardenConfig()
-    if not (isfile and isfile(GARDEN_FILE)) then return end
-    local success, result = pcall(function()
-        return HttpService:JSONDecode(readfile(GARDEN_FILE))
-    end)
-    if not success then return end
-    for key, value in pairs(CONFIG_DEFAULTS) do
-        config[key] = value
-    end
-
-    if typeof(result.Config) == "table" and result.ConfigVersion == CONFIG_VERSION then
-        for key in pairs(CONFIG_DEFAULTS) do
-            local stored = result.Config[key]
-            if typeof(stored) == "boolean" then
-                config[key] = stored
-            end
-        end
-    end
-end
-
-local function setInventoryStatus(text, color)
-    InventoryStatusLabel.Text = text
-    InventoryStatusLabel.TextColor3 = color or THEME.SubText
-end
-
-local function updateSelectedSeedDisplay()
-    if selectedStockName and seedShopLookup[selectedStockName] then
-        local entry = seedShopLookup[selectedStockName]
-        SelectedSeedNameLabel.Text = entry.Name
-        SelectedSeedStockLabel.Text = string.format("Stock: %d", entry.Stock)
-    else
-        SelectedSeedNameLabel.Text = "Select a seed to view info"
-        SelectedSeedStockLabel.Text = "Stock: --"
-    end
-end
-
-local function clearStockEntries()
-    for _, child in ipairs(StockScroll:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
-    end
-end
-
-local function fetchSeedStockData()
-    local ok, result = pcall(function()
-        local shopGui = PlayerGui:FindFirstChild("Seed_Shop")
-        if not shopGui then
-            return nil, "Open the Seed Shop NPC to populate this list."
-        end
-        local entries = {}
-        local seen = {}
-        for _, node in ipairs(shopGui:GetDescendants()) do
-            if node:IsA("Frame") and node.Name == "Main_Frame" then
-                local card = node.Parent
-                if card and not seen[card] then
-                    seen[card] = true
-                    local stockLabel = node:FindFirstChild("Stock_Text")
-                    local stockNumber = 0
-                    if stockLabel and stockLabel:IsA("TextLabel") then
-                        local digits = stockLabel.Text and stockLabel.Text:match("%d+")
-                        stockNumber = tonumber(digits) or 0
-                    end
-                    table.insert(entries, {Name = card.Name, Stock = stockNumber})
-                end
-            end
-        end
-        if #entries == 0 then
-            return nil, "Seed stock UI not detected; keep the shop window open."
-        end
-        table.sort(entries, function(a, b) return a.Name < b.Name end)
-        return entries
-    end)
-
-    if not ok then
-        return nil, "Failed to read Seed Shop UI."
-    end
-    return result
-end
-
-local function refreshInventoryList(showNotif)
     local data, err = fetchSeedStockData()
     if not data then
         seedShopData = {}
@@ -1340,117 +1135,9 @@ AutoBuyAllButton = createInventoryButton("Auto Buy All (OFF)", THEME.Sidebar, fu
     end
 end)
 
-local function resolveFarm()
-    if farmData.PlantLocations and farmData.PlantsPhysical then
-        return
-    end
-    if not FarmFolder then return end
-    for _, farm in ipairs(FarmFolder:GetChildren()) do
-        local important = farm:FindFirstChild("Important")
-        local dataFolder = important and important:FindFirstChild("Data")
-        local ownerValue = dataFolder and dataFolder:FindFirstChild("Owner")
-        if ownerValue and ownerValue.Value == LocalPlayer.Name then
-            farmData.PlantLocations = important:FindFirstChild("Plant_Locations")
-            farmData.PlantsPhysical = important:FindFirstChild("Plants_Physical")
-            break
-        end
-    end
-end
 
-local function variantAllowed(variant)
-    -- Only collect fruits with variants: Gold, Rainbow, or Silver
-    if not variant or variant == "" then
-        return false -- Skip normal fruits (no variant)
-    end
-    
-    local lower = variant:lower()
-    
-    -- Check for specific variants we want
-    if lower:find("gold") or lower:find("rainbow") or lower:find("silver") then
-        return true
-    end
-    
-    -- Skip everything else
-    return false
-end
 
-local function harvestMatchingPlants()
-    if not farmData.PlantsPhysical then return end
-    
-    -- Stop harvesting if inventory is full
-    if countCrops() >= SELL_THRESHOLD then
-        return
-    end
-    
-    -- Collect all harvestable plants regardless of player position
-    for _, descendant in ipairs(farmData.PlantsPhysical:GetDescendants()) do
-        if descendant:IsA("Model") then
-            local variantValue = descendant:FindFirstChild("Variant")
-            local variant = variantValue and variantValue.Value or ""
-            if variantAllowed(variant) then
-                local prompt = descendant:FindFirstChildWhichIsA("ProximityPrompt", true)
-                if prompt and prompt.Enabled then
-                    -- Force trigger prompt regardless of distance or player position
-                    pcall(function()
-                        fireproximityprompt(prompt)
-                    end)
-                    task.wait(0.03)
-                end
-            end
-        end
-    end
-end
 
-local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
-
-local function countCrops()
-    local total = 0
-    local function countTools(container)
-        for _, tool in ipairs(container:GetChildren()) do
-            if tool:IsA("Tool") and tool:FindFirstChild("Item_String") then
-                total = total + 1
-            end
-        end
-    end
-    countTools(Backpack)
-    local character = getCharacter()
-    if character then
-        countTools(character)
-    end
-    return total
-end
-
-local function findSellButton()
-    -- Find the SELL button in PlayerGui
-    for _, gui in ipairs(PlayerGui:GetDescendants()) do
-        if gui:IsA("TextButton") and gui.Text and gui.Text:upper():find("SELL") and gui.Visible then
-            return gui
-        end
-    end
-    return nil
-end
-
-local function clickDialogOption(optionText)
-    -- Find and click dialog option by text
-    task.wait(0.3)
-    for _, gui in ipairs(PlayerGui:GetDescendants()) do
-        if gui:IsA("TextButton") and gui.Text and gui.Text:find(optionText) and gui.Visible then
-            -- Simulate click using various methods
-            pcall(function()
-                for _, connection in pairs(getconnections(gui.MouseButton1Click)) do
-                    connection:Fire()
-                end
-            end)
-            pcall(function()
-                firesignal(gui.MouseButton1Click)
-            end)
-            return true
-        end
-    end
-    return false
-end
-
-local function sellInventory()
     if isSelling then return end
     if countCrops() == 0 then return end
     
@@ -1539,74 +1226,9 @@ local function sellInventory()
     isSelling = false
 end
 
-local function autoSellIfNeeded()
-    if not config.AutoSell then return end
-    if countCrops() < SELL_THRESHOLD then return end
-    sellInventory()
-end
 
-loadGardenConfig()
 
-local function loadInventory()
-    loadGardenConfig()
-    resolveFarm()
-end
 
--- Launch Button
-local LaunchBtn = Instance.new("TextButton")
-LaunchBtn.Size = UDim2.new(1, 0, 0, 40)
-LaunchBtn.Position = UDim2.new(0, 0, 1, -45)
-LaunchBtn.BackgroundColor3 = THEME.Green
-LaunchBtn.Text = "LAUNCH MAGPIE"
-LaunchBtn.TextColor3 = Color3.new(1,1,1)
-LaunchBtn.Font = Enum.Font.GothamBold
-LaunchBtn.TextSize = 16
-LaunchBtn.Parent = MagpieFrame
-local LaunchCorner = Instance.new("UICorner")
-LaunchCorner.CornerRadius = UDim.new(0, 8)
-LaunchCorner.Parent = LaunchBtn
-
-LaunchBtn.MouseButton1Click:Connect(function()
-    magpieActive = not magpieActive
-    if magpieActive then
-        LaunchBtn.Text = "STOP MAGPIE"
-        LaunchBtn.BackgroundColor3 = THEME.Red
-        notify("Magpie Method Started!", THEME.Green)
-        setAutomationStatus("Running", THEME.Green)
-        resolveFarm()
-
-        task.spawn(function()
-            local iteration = 0
-            while magpieActive do
-                iteration = iteration + 1
-                pcall(function()
-                    harvestMatchingPlants()
-
-                    autoSellIfNeeded()
-                end)
-                task.wait(0.1)
-            end
-        end)
-    else
-        LaunchBtn.Text = "LAUNCH MAGPIE"
-        LaunchBtn.BackgroundColor3 = THEME.Green
-        notify("Magpie Method Stopped", THEME.Red)
-        setAutomationStatus("Idle", THEME.SubText)
-    end
-end)
-
--- Init Magpie
-loadInventory()
-
--- Method Buttons
-createMethodBtn("Magpie Method", THEME.Accent, UDim2.new(0.5, -100, 0.3, 0), function()
-    MethodContainer.Visible = false
-    MagpieFrame.Visible = true
-end)
-
-createMethodBtn("Panther Method", THEME.Sidebar, UDim2.new(0.5, -100, 0.5, 0), function()
-    notify("Panther Method Coming Soon!", THEME.Sidebar)
-end)
 
 -- PAGE: Scripts
 local ScriptsPage = Instance.new("Frame")
@@ -1804,9 +1426,8 @@ end
 -- Register Tabs
 tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
 tabs["Scripts"] = { Button = createTabButton("Scripts", 1), Page = ScriptsPage }
-tabs["Garden"] = { Button = createTabButton("Garden", 2), Page = GardenPage }
-tabs["Settings"] = { Button = createTabButton("Settings", 3), Page = SettingsPage }
-tabs["About"] = { Button = createTabButton("About", 4), Page = AboutPage }
+tabs["Settings"] = { Button = createTabButton("Settings", 2), Page = SettingsPage }
+tabs["About"] = { Button = createTabButton("About", 3), Page = AboutPage }
 
 -- Button Events
 tabs["AutoExec"].Button.MouseButton1Click:Connect(function() 
@@ -1817,7 +1438,6 @@ tabs["Scripts"].Button.MouseButton1Click:Connect(function()
     switchTab("Scripts") 
     refreshScripts()
 end)
-tabs["Garden"].Button.MouseButton1Click:Connect(function() switchTab("Garden") end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
