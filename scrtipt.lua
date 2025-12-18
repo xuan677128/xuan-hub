@@ -152,11 +152,27 @@ Title.Text = "XuanHub"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
 Title.TextColor3 = THEME.Accent
-Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Size = UDim2.new(0, 100, 1, 0)
 Title.Position = UDim2.new(0, 20, 0, 0)
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
+
+-- Global Search Bar (in Header)
+local GlobalSearchBar = Instance.new("TextBox")
+GlobalSearchBar.Size = UDim2.new(0, 200, 0, 30)
+GlobalSearchBar.Position = UDim2.new(0, 130, 0.5, -15)
+GlobalSearchBar.BackgroundColor3 = THEME.Item
+GlobalSearchBar.TextColor3 = THEME.Text
+GlobalSearchBar.PlaceholderText = "🔍 Search all scripts..."
+GlobalSearchBar.Font = Enum.Font.Gotham
+GlobalSearchBar.TextSize = 12
+GlobalSearchBar.ClearTextOnFocus = false
+GlobalSearchBar.Parent = Header
+
+local GlobalSearchCorner = Instance.new("UICorner")
+GlobalSearchCorner.CornerRadius = UDim.new(0, 6)
+GlobalSearchCorner.Parent = GlobalSearchBar
 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "-"
@@ -752,9 +768,25 @@ local ListCorner = Instance.new("UICorner")
 ListCorner.CornerRadius = UDim.new(0, 8)
 ListCorner.Parent = ListContainer
 
+-- Search Bar (in Scripts tab)
+local SearchBar = Instance.new("TextBox")
+SearchBar.Size = UDim2.new(1, -10, 0, 30)
+SearchBar.Position = UDim2.new(0, 5, 0, 5)
+SearchBar.BackgroundColor3 = THEME.Sidebar
+SearchBar.TextColor3 = THEME.Text
+SearchBar.PlaceholderText = "🔍 Search scripts..."
+SearchBar.Font = Enum.Font.Gotham
+SearchBar.TextSize = 11
+SearchBar.ClearTextOnFocus = false
+SearchBar.Parent = ListContainer
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 6)
+SearchCorner.Parent = SearchBar
+
 local ScriptList = Instance.new("ScrollingFrame")
-ScriptList.Size = UDim2.new(1, -10, 1, -10)
-ScriptList.Position = UDim2.new(0, 5, 0, 5)
+ScriptList.Size = UDim2.new(1, -10, 1, -45)
+ScriptList.Position = UDim2.new(0, 5, 0, 40)
 ScriptList.BackgroundTransparency = 1
 ScriptList.ScrollBarThickness = 2
 ScriptList.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Auto Scroll
@@ -893,7 +925,29 @@ createControlBtn("🗑", THEME.Red, 0.80, function()
     end
 end)
 
-function refreshScripts()
+-- Recent Scripts Tracking
+local RecentScripts = {}
+local MAX_RECENT = 5
+
+local function addToRecent(fileName)
+    -- Remove if already exists
+    for i, name in ipairs(RecentScripts) do
+        if name == fileName then
+            table.remove(RecentScripts, i)
+            break
+        end
+    end
+    
+    -- Add to front
+    table.insert(RecentScripts, 1, fileName)
+    
+    -- Keep only max items
+    while #RecentScripts > MAX_RECENT do
+        table.remove(RecentScripts)
+    end
+end
+
+function refreshScripts(searchQuery)
     for _, v in pairs(ScriptList:GetChildren()) do
         if v:IsA("TextButton") then v:Destroy() end
     end
@@ -946,5 +1000,22 @@ end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
+-- Search Bar Event (Scripts tab)
+SearchBar:GetPropertyChangedSignal("Text"):Connect(function()
+    refreshScripts(SearchBar.Text)
+end)
+
+-- Global Search Bar Event (Header)
+GlobalSearchBar:GetPropertyChangedSignal("Text"):Connect(function()
+    local query = GlobalSearchBar.Text
+    if query ~= "" then
+        switchTab("Scripts")
+        SearchBar.Text = query
+        refreshScripts(query)
+    end
+end)
+
 -- Init
+task.wait()
+refreshAutoExec()
 switchTab("AutoExec")
