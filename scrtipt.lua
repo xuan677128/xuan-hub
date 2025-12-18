@@ -898,15 +898,18 @@ createControlBtn("💾", THEME.Accent, 0.20, function()
                 delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
                 CurrentScriptFile = newName
                 FileNameBox.Text = newName
-                refreshScripts()
+                addToRecent(newName)
+                refreshScripts("")
                 notify("Saved & Renamed to: " .. newName, THEME.Accent)
             else
                 -- Just save content
                 writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+                addToRecent(CurrentScriptFile)
                 notify("Saved Successfully!", THEME.Accent)
             end
         else
             writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+            addToRecent(CurrentScriptFile)
             notify("Saved Successfully!", THEME.Accent)
         end
     end
