@@ -373,7 +373,7 @@ end
 local AutoExecPage = Instance.new("Frame")
 AutoExecPage.Size = UDim2.new(1, 0, 1, 0)
 AutoExecPage.BackgroundTransparency = 1
-AutoExecPage.Visible = false
+AutoExecPage.Visible = true
 AutoExecPage.Parent = Content
 
 -- AutoExec List (Left Side)
