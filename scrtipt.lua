@@ -1105,12 +1105,6 @@ tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
 -- Init - Properly activate first tab
+task.wait()
 refreshAutoExec()
-local firstTab = tabs["AutoExec"]
-if firstTab then
-    firstTab.Button.BackgroundTransparency = 0
-    firstTab.Button.BackgroundColor3 = THEME.Item
-    firstTab.Button.TextColor3 = THEME.Accent
-    firstTab.Page.Visible = true
-    currentTab = firstTab
-end
+switchTab("AutoExec")
