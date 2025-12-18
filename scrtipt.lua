@@ -1142,5 +1142,7 @@ end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
 
--- Init
+-- Init - Wait a frame then switch
+task.wait()
 switchTab("AutoExec")
+refreshAutoExec()
