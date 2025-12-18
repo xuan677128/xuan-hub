@@ -885,8 +885,30 @@ end)
 
 createControlBtn("💾", THEME.Accent, 0.20, function()
     if CurrentScriptFile then
-        writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
-        notify("Saved Successfully!", THEME.Accent)
+        local newName = FileNameBox.Text
+        if newName ~= "Script Name" and newName ~= "" then
+            -- Add file extension if missing
+            if not newName:match("%.txt$") and not newName:match("%.lua$") then 
+                newName = newName .. ".txt" 
+            end
+            
+            -- If name changed, rename the file
+            if newName ~= CurrentScriptFile then
+                writefile(SCRIPTS_DIR .. "/" .. newName, ScriptEditor.Text)
+                delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
+                CurrentScriptFile = newName
+                FileNameBox.Text = newName
+                refreshScripts()
+                notify("Saved & Renamed to: " .. newName, THEME.Accent)
+            else
+                -- Just save content
+                writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+                notify("Saved Successfully!", THEME.Accent)
+            end
+        else
+            writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+            notify("Saved Successfully!", THEME.Accent)
+        end
     end
 end)
 
