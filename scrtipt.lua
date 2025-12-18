@@ -29,6 +29,33 @@ local FarmFolder = workspace:FindFirstChild("Farm") or workspace:WaitForChild("F
 local SellEvent = GameEvents and GameEvents:FindFirstChild("Sell_Inventory")
 local BuySeedEvent = GameEvents and GameEvents:FindFirstChild("BuySeedStock")
 
+-- Detect Executor
+local function getExecutorName()
+    if identifyexecutor then
+        return identifyexecutor()
+    elseif KRNL_LOADED then
+        return "KRNL"
+    elseif syn then
+        return "Synapse X"
+    elseif SENTINEL_LOADED then
+        return "Sentinel"
+    elseif getexecutorname then
+        return getexecutorname()
+    elseif isfluxus then
+        return "Fluxus"
+    elseif Arceus then
+        return "Arceus X"
+    elseif delta then
+        return "Delta"
+    elseif issolara then
+        return "Solara"
+    else
+        return "Unknown Executor"
+    end
+end
+
+local EXECUTOR_NAME = getExecutorName()
+
 -- Singleton Protection: Prevent multiple instances
 if game.CoreGui:FindFirstChild("XuanHubUI") then
     warn("XuanHub is already running!")
@@ -157,6 +184,17 @@ Title.Position = UDim2.new(0, 20, 0, 0)
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
+
+local ExecutorInfo = Instance.new("TextLabel")
+ExecutorInfo.Text = "⚡ " .. EXECUTOR_NAME
+ExecutorInfo.Font = Enum.Font.Gotham
+ExecutorInfo.TextSize = 11
+ExecutorInfo.TextColor3 = THEME.SubText
+ExecutorInfo.Size = UDim2.new(0, 200, 0, 15)
+ExecutorInfo.Position = UDim2.new(0, 20, 0, 28)
+ExecutorInfo.BackgroundTransparency = 1
+ExecutorInfo.TextXAlignment = Enum.TextXAlignment.Left
+ExecutorInfo.Parent = Header
 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Text = "-"
@@ -720,7 +758,7 @@ local AboutText = Instance.new("TextLabel")
 AboutText.Size = UDim2.new(1, -20, 1, -10)
 AboutText.Position = UDim2.new(0, 10, 0, 5)
 AboutText.BackgroundTransparency = 1
-AboutText.Text = "XuanHub Remastered v1.1\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor\n• Utilities (Anti-AFK, Rejoin, Server Hop)\n• Custom Themes\n\nI'm Xuan, Admin from Kaydens Server in Discord."
+AboutText.Text = "XuanHub Remastered v1.2\n\nA modern Script Hub designed for Mobile & PC.\n• Internal Auto-Execute System\n• Advanced Script Editor with Search\n• Recent Scripts Tracking\n• Utilities (Anti-AFK, Rejoin, Server Hop)\n• Custom Themes\n• Executor Detection\n\nI'm Xuan, Admin from Kaydens Server in Discord."
 AboutText.TextColor3 = THEME.Text
 AboutText.Font = Enum.Font.Gotham
 AboutText.TextSize = 13
@@ -752,9 +790,43 @@ local ListCorner = Instance.new("UICorner")
 ListCorner.CornerRadius = UDim.new(0, 8)
 ListCorner.Parent = ListContainer
 
+-- Search Bar
+local SearchBar = Instance.new("TextBox")
+SearchBar.Size = UDim2.new(1, -10, 0, 30)
+SearchBar.Position = UDim2.new(0, 5, 0, 5)
+SearchBar.BackgroundColor3 = THEME.Background
+SearchBar.TextColor3 = THEME.Text
+SearchBar.PlaceholderText = "🔍 Search scripts..."
+SearchBar.PlaceholderColor3 = THEME.SubText
+SearchBar.Font = Enum.Font.Gotham
+SearchBar.TextSize = 12
+SearchBar.Text = ""
+SearchBar.ClearButtonMode = Enum.TextBoxClearButtonMode.WhileEditing
+SearchBar.Parent = ListContainer
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 6)
+SearchCorner.Parent = SearchBar
+
+local SearchPadding = Instance.new("UIPadding")
+SearchPadding.PaddingLeft = UDim.new(0, 8)
+SearchPadding.Parent = SearchBar
+
+-- Recent Scripts Label
+local RecentLabel = Instance.new("TextLabel")
+RecentLabel.Size = UDim2.new(1, -10, 0, 20)
+RecentLabel.Position = UDim2.new(0, 5, 0, 40)
+RecentLabel.BackgroundTransparency = 1
+RecentLabel.Text = "Recent"
+RecentLabel.TextColor3 = THEME.SubText
+RecentLabel.Font = Enum.Font.GothamBold
+RecentLabel.TextSize = 10
+RecentLabel.TextXAlignment = Enum.TextXAlignment.Left
+RecentLabel.Parent = ListContainer
+
 local ScriptList = Instance.new("ScrollingFrame")
-ScriptList.Size = UDim2.new(1, -10, 1, -10)
-ScriptList.Position = UDim2.new(0, 5, 0, 5)
+ScriptList.Size = UDim2.new(1, -10, 1, -70)
+ScriptList.Position = UDim2.new(0, 5, 0, 65)
 ScriptList.BackgroundTransparency = 1
 ScriptList.ScrollBarThickness = 2
 ScriptList.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Auto Scroll
@@ -821,6 +893,24 @@ Controls.BackgroundTransparency = 1
 Controls.Parent = EditorContainer
 
 local CurrentScriptFile = nil
+local RecentScripts = {}
+local MAX_RECENT = 5
+
+local function addToRecent(fileName)
+    -- Remove if already exists
+    for i, name in ipairs(RecentScripts) do
+        if name == fileName then
+            table.remove(RecentScripts, i)
+            break
+        end
+    end
+    -- Add to front
+    table.insert(RecentScripts, 1, fileName)
+    -- Keep only MAX_RECENT items
+    while #RecentScripts > MAX_RECENT do
+        table.remove(RecentScripts, #RecentScripts)
+    end
+end
 
 local function createControlBtn(text, color, posScale, callback)
     local btn = Instance.new("TextButton")
@@ -845,6 +935,9 @@ end
 createControlBtn("▶", THEME.Green, 0, function()
     if ScriptEditor.Text ~= "" then
         loadstring(ScriptEditor.Text)()
+        if CurrentScriptFile then
+            addToRecent(CurrentScriptFile)
+        end
         notify("Run Successful!", THEME.Green)
     end
 end)
@@ -852,6 +945,7 @@ end)
 createControlBtn("💾", THEME.Accent, 0.20, function()
     if CurrentScriptFile then
         writefile(SCRIPTS_DIR .. "/" .. CurrentScriptFile, ScriptEditor.Text)
+        addToRecent(CurrentScriptFile)
         notify("Saved Successfully!", THEME.Accent)
     end
 end)
@@ -893,40 +987,142 @@ createControlBtn("🗑", THEME.Red, 0.80, function()
     end
 end)
 
-function refreshScripts()
+function refreshScripts(searchQuery)
     for _, v in pairs(ScriptList:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
+        if v:IsA("TextButton") or v:IsA("TextLabel") then v:Destroy() end
     end
     
+    searchQuery = searchQuery and searchQuery:lower() or ""
     local files = listfiles(SCRIPTS_DIR)
+    local displayCount = 0
+    
+    -- Show recent scripts first if no search
+    if searchQuery == "" and #RecentScripts > 0 then
+        for i, recentName in ipairs(RecentScripts) do
+            local recentPath = SCRIPTS_DIR .. "/" .. recentName
+            if isfile(recentPath) then
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.BackgroundColor3 = THEME.Accent
+                btn.Text = "⭐ " .. recentName
+                btn.TextColor3 = THEME.Text
+                btn.Font = Enum.Font.GothamBold
+                btn.TextSize = 11
+                btn.TextXAlignment = Enum.TextXAlignment.Left
+                btn.Parent = ScriptList
+                
+                local padding = Instance.new("UIPadding")
+                padding.PaddingLeft = UDim.new(0, 8)
+                padding.Parent = btn
+                
+                local c = Instance.new("UICorner")
+                c.CornerRadius = UDim.new(0, 4)
+                c.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    CurrentScriptFile = recentName
+                    FileNameBox.Text = recentName
+                    ScriptEditor.Text = readfile(recentPath)
+                    addToRecent(recentName)
+                    for _, b in pairs(ScriptList:GetChildren()) do
+                        if b:IsA("TextButton") then 
+                            b.BackgroundColor3 = THEME.Sidebar
+                            b.TextColor3 = THEME.Text
+                            if b.Text:match("^⭐") then
+                                b.BackgroundColor3 = THEME.Accent
+                            end
+                        end
+                    end
+                    btn.BackgroundColor3 = THEME.Hover
+                end)
+                displayCount = displayCount + 1
+            end
+        end
+        
+        if displayCount > 0 then
+            local divider = Instance.new("TextLabel")
+            divider.Size = UDim2.new(1, 0, 0, 20)
+            divider.BackgroundTransparency = 1
+            divider.Text = "All Scripts"
+            divider.TextColor3 = THEME.SubText
+            divider.Font = Enum.Font.GothamBold
+            divider.TextSize = 10
+            divider.TextXAlignment = Enum.TextXAlignment.Left
+            divider.Parent = ScriptList
+            local divPad = Instance.new("UIPadding")
+            divPad.PaddingLeft = UDim.new(0, 5)
+            divPad.Parent = divider
+            displayCount = displayCount + 1
+        end
+    end
+    
+    -- Show all scripts (filtered)
     for _, file in pairs(files) do
         local name = file:match("([^/]+)$")
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
-        btn.BackgroundColor3 = THEME.Sidebar
-        btn.Text = name
-        btn.TextColor3 = THEME.Text
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 12
-        btn.Parent = ScriptList
-        
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 4)
-        c.Parent = btn
-        
-        btn.MouseButton1Click:Connect(function()
-            CurrentScriptFile = name
-            FileNameBox.Text = name
-            ScriptEditor.Text = readfile(file)
-            -- Highlight selection
-            for _, b in pairs(ScriptList:GetChildren()) do
-                if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+        if name:lower():find(searchQuery, 1, true) then
+            local isRecent = false
+            for _, recentName in ipairs(RecentScripts) do
+                if recentName == name then
+                    isRecent = true
+                    break
+                end
             end
-            btn.BackgroundColor3 = THEME.Accent
-        end)
+            
+            if not isRecent or searchQuery ~= "" then
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.BackgroundColor3 = THEME.Sidebar
+                btn.Text = name
+                btn.TextColor3 = THEME.Text
+                btn.Font = Enum.Font.Gotham
+                btn.TextSize = 11
+                btn.TextXAlignment = Enum.TextXAlignment.Left
+                btn.Parent = ScriptList
+                
+                local padding = Instance.new("UIPadding")
+                padding.PaddingLeft = UDim.new(0, 8)
+                padding.Parent = btn
+                
+                local c = Instance.new("UICorner")
+                c.CornerRadius = UDim.new(0, 4)
+                c.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    CurrentScriptFile = name
+                    FileNameBox.Text = name
+                    ScriptEditor.Text = readfile(file)
+                    addToRecent(name)
+                    refreshScripts(searchQuery)
+                    for _, b in pairs(ScriptList:GetChildren()) do
+                        if b:IsA("TextButton") then 
+                            b.BackgroundColor3 = THEME.Sidebar
+                        end
+                    end
+                    btn.BackgroundColor3 = THEME.Accent
+                end)
+                displayCount = displayCount + 1
+            end
+        end
     end
-    ScriptList.CanvasSize = UDim2.new(0, 0, 0, #files * 35)
+    
+    if displayCount == 0 then
+        local noResults = Instance.new("TextLabel")
+        noResults.Size = UDim2.new(1, 0, 0, 40)
+        noResults.BackgroundTransparency = 1
+        noResults.Text = "No scripts found"
+        noResults.TextColor3 = THEME.SubText
+        noResults.Font = Enum.Font.Gotham
+        noResults.TextSize = 12
+        noResults.Parent = ScriptList
+    end
+    
+    ScriptList.CanvasSize = UDim2.new(0, 0, 0, displayCount * 35)
 end
+
+-- Connect search bar
+SearchBar:GetPropertyChangedSignal("Text"):Connect(function()
+    refreshScripts(SearchBar.Text)
+end)
 
 -- Register Tabs
 tabs["AutoExec"] = { Button = createTabButton("AutoExec", 0), Page = AutoExecPage }
