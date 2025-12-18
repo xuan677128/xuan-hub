@@ -164,6 +164,7 @@ GlobalSearchBar.Size = UDim2.new(0, 200, 0, 30)
 GlobalSearchBar.Position = UDim2.new(0, 130, 0.5, -15)
 GlobalSearchBar.BackgroundColor3 = THEME.Item
 GlobalSearchBar.TextColor3 = THEME.Text
+GlobalSearchBar.Text = ""
 GlobalSearchBar.PlaceholderText = "🔍 Search all scripts..."
 GlobalSearchBar.Font = Enum.Font.Gotham
 GlobalSearchBar.TextSize = 12
@@ -774,6 +775,7 @@ SearchBar.Size = UDim2.new(1, -10, 0, 30)
 SearchBar.Position = UDim2.new(0, 5, 0, 5)
 SearchBar.BackgroundColor3 = THEME.Sidebar
 SearchBar.TextColor3 = THEME.Text
+SearchBar.Text = ""
 SearchBar.PlaceholderText = "🔍 Search scripts..."
 SearchBar.Font = Enum.Font.Gotham
 SearchBar.TextSize = 11
@@ -889,17 +891,22 @@ createControlBtn("💾", THEME.Accent, 0.20, function()
 end)
 
 createControlBtn("✏️", THEME.Sidebar, 0.40, function()
-    if CurrentScriptFile and FileNameBox.Text ~= "" then
+    if CurrentScriptFile and FileNameBox.Text ~= "" and FileNameBox.Text ~= "Script Name" then
         local newName = FileNameBox.Text
-        if not newName:match("%.txt$") then newName = newName .. ".txt" end
+        if not newName:match("%.txt$") and not newName:match("%.lua$") then 
+            newName = newName .. ".txt" 
+        end
         
         if newName ~= CurrentScriptFile then
             writefile(SCRIPTS_DIR .. "/" .. newName, ScriptEditor.Text)
             delfile(SCRIPTS_DIR .. "/" .. CurrentScriptFile)
             CurrentScriptFile = newName
+            FileNameBox.Text = newName
             refreshScripts()
-            notify("Renamed Successfully!", THEME.Sidebar)
+            notify("Renamed to: " .. newName, THEME.Sidebar)
         end
+    else
+        notify("Enter a valid file name!", THEME.Red)
     end
 end)
 
@@ -949,37 +956,104 @@ end
 
 function refreshScripts(searchQuery)
     for _, v in pairs(ScriptList:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
+        if v:IsA("TextButton") or v:IsA("TextLabel") then v:Destroy() end
     end
     
+    searchQuery = searchQuery or ""
+    local lowerQuery = searchQuery:lower()
+    
     local files = listfiles(SCRIPTS_DIR)
+    local displayCount = 0
+    
+    -- Show Recent Scripts section if no search
+    if searchQuery == "" and #RecentScripts > 0 then
+        local recentLabel = Instance.new("TextLabel")
+        recentLabel.Size = UDim2.new(1, 0, 0, 20)
+        recentLabel.BackgroundTransparency = 1
+        recentLabel.Text = "Recent"
+        recentLabel.TextColor3 = THEME.SubText
+        recentLabel.Font = Enum.Font.GothamBold
+        recentLabel.TextSize = 10
+        recentLabel.TextXAlignment = Enum.TextXAlignment.Left
+        recentLabel.Parent = ScriptList
+        displayCount = displayCount + 1
+        
+        for _, recentName in ipairs(RecentScripts) do
+            local fullPath = SCRIPTS_DIR .. "/" .. recentName
+            if isfile(fullPath) then
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.BackgroundColor3 = THEME.Sidebar
+                btn.Text = "⭐ " .. recentName
+                btn.TextColor3 = THEME.Accent
+                btn.Font = Enum.Font.Gotham
+                btn.TextSize = 11
+                btn.Parent = ScriptList
+                
+                local c = Instance.new("UICorner")
+                c.CornerRadius = UDim.new(0, 4)
+                c.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    CurrentScriptFile = recentName
+                    FileNameBox.Text = recentName
+                    ScriptEditor.Text = readfile(fullPath)
+                    addToRecent(recentName)
+                    for _, b in pairs(ScriptList:GetChildren()) do
+                        if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                    end
+                    btn.BackgroundColor3 = THEME.Accent
+                end)
+                displayCount = displayCount + 1
+            end
+        end
+        
+        -- All Scripts section
+        local allLabel = Instance.new("TextLabel")
+        allLabel.Size = UDim2.new(1, 0, 0, 20)
+        allLabel.BackgroundTransparency = 1
+        allLabel.Text = "All Scripts"
+        allLabel.TextColor3 = THEME.SubText
+        allLabel.Font = Enum.Font.GothamBold
+        allLabel.TextSize = 10
+        allLabel.TextXAlignment = Enum.TextXAlignment.Left
+        allLabel.Parent = ScriptList
+        displayCount = displayCount + 1
+    end
+    
     for _, file in pairs(files) do
         local name = file:match("([^/]+)$")
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
-        btn.BackgroundColor3 = THEME.Sidebar
-        btn.Text = name
-        btn.TextColor3 = THEME.Text
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 12
-        btn.Parent = ScriptList
         
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 4)
-        c.Parent = btn
-        
-        btn.MouseButton1Click:Connect(function()
-            CurrentScriptFile = name
-            FileNameBox.Text = name
-            ScriptEditor.Text = readfile(file)
-            -- Highlight selection
-            for _, b in pairs(ScriptList:GetChildren()) do
-                if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
-            end
-            btn.BackgroundColor3 = THEME.Accent
-        end)
+        -- Filter by search query
+        if searchQuery == "" or name:lower():find(lowerQuery, 1, true) then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, 0, 0, 30)
+            btn.BackgroundColor3 = THEME.Sidebar
+            btn.Text = name
+            btn.TextColor3 = THEME.Text
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 12
+            btn.Parent = ScriptList
+            
+            local c = Instance.new("UICorner")
+            c.CornerRadius = UDim.new(0, 4)
+            c.Parent = btn
+            
+            btn.MouseButton1Click:Connect(function()
+                CurrentScriptFile = name
+                FileNameBox.Text = name
+                ScriptEditor.Text = readfile(file)
+                addToRecent(name)
+                -- Highlight selection
+                for _, b in pairs(ScriptList:GetChildren()) do
+                    if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                end
+                btn.BackgroundColor3 = THEME.Accent
+            end)
+            displayCount = displayCount + 1
+        end
     end
-    ScriptList.CanvasSize = UDim2.new(0, 0, 0, #files * 35)
+    ScriptList.CanvasSize = UDim2.new(0, 0, 0, displayCount * 35)
 end
 
 -- Register Tabs
