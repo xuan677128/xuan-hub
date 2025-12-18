@@ -769,10 +769,25 @@ local ListCorner = Instance.new("UICorner")
 ListCorner.CornerRadius = UDim.new(0, 8)
 ListCorner.Parent = ListContainer
 
+-- Refresh Button
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Size = UDim2.new(1, -10, 0, 25)
+RefreshBtn.Position = UDim2.new(0, 5, 0, 5)
+RefreshBtn.BackgroundColor3 = THEME.Sidebar
+RefreshBtn.Text = "🔄 Refresh"
+RefreshBtn.TextColor3 = THEME.Accent
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.TextSize = 11
+RefreshBtn.Parent = ListContainer
+
+local RefreshCorner = Instance.new("UICorner")
+RefreshCorner.CornerRadius = UDim.new(0, 6)
+RefreshCorner.Parent = RefreshBtn
+
 -- Search Bar (in Scripts tab)
 local SearchBar = Instance.new("TextBox")
-SearchBar.Size = UDim2.new(1, -10, 0, 30)
-SearchBar.Position = UDim2.new(0, 5, 0, 5)
+SearchBar.Size = UDim2.new(1, -10, 0, 25)
+SearchBar.Position = UDim2.new(0, 5, 0, 35)
 SearchBar.BackgroundColor3 = THEME.Sidebar
 SearchBar.TextColor3 = THEME.Text
 SearchBar.Text = ""
@@ -787,8 +802,8 @@ SearchCorner.CornerRadius = UDim.new(0, 6)
 SearchCorner.Parent = SearchBar
 
 local ScriptList = Instance.new("ScrollingFrame")
-ScriptList.Size = UDim2.new(1, -10, 1, -45)
-ScriptList.Position = UDim2.new(0, 5, 0, 40)
+ScriptList.Size = UDim2.new(1, -10, 1, -70)
+ScriptList.Position = UDim2.new(0, 5, 0, 65)
 ScriptList.BackgroundTransparency = 1
 ScriptList.ScrollBarThickness = 2
 ScriptList.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Auto Scroll
@@ -957,6 +972,26 @@ createControlBtn("🗑", THEME.Red, 0.80, function()
     end
 end)
 
+-- Favorites Tracking
+local FavoriteScripts = {}
+local lastClickTime = {}
+local DOUBLE_CLICK_TIME = 0.5 -- seconds
+
+local function toggleFavorite(fileName)
+    -- Check if already favorited
+    for i, name in ipairs(FavoriteScripts) do
+        if name == fileName then
+            table.remove(FavoriteScripts, i)
+            notify("Removed from Favorites", THEME.Red)
+            return
+        end
+    end
+    
+    -- Add to favorites
+    table.insert(FavoriteScripts, 1, fileName)
+    notify("Added to Favorites! ⭐", THEME.Accent)
+end
+
 -- Recent Scripts Tracking
 local RecentScripts = {}
 local MAX_RECENT = 5
@@ -989,6 +1024,64 @@ function refreshScripts(searchQuery)
     
     local files = listfiles(SCRIPTS_DIR)
     local displayCount = 0
+    
+    -- Show Favorites section if no search
+    if searchQuery == "" and #FavoriteScripts > 0 then
+        local favLabel = Instance.new("TextLabel")
+        favLabel.Size = UDim2.new(1, 0, 0, 20)
+        favLabel.BackgroundTransparency = 1
+        favLabel.Text = "⭐ Favorites"
+        favLabel.TextColor3 = THEME.Accent
+        favLabel.Font = Enum.Font.GothamBold
+        favLabel.TextSize = 10
+        favLabel.TextXAlignment = Enum.TextXAlignment.Left
+        favLabel.Parent = ScriptList
+        displayCount = displayCount + 1
+        
+        for _, favName in ipairs(FavoriteScripts) do
+            local fullPath = SCRIPTS_DIR .. "/" .. favName
+            if isfile(fullPath) then
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.BackgroundColor3 = THEME.Accent
+                btn.Text = "⭐ " .. favName
+                btn.TextColor3 = THEME.Text
+                btn.Font = Enum.Font.GothamBold
+                btn.TextSize = 11
+                btn.Parent = ScriptList
+                
+                local c = Instance.new("UICorner")
+                c.CornerRadius = UDim.new(0, 4)
+                c.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    local currentTime = tick()
+                    local lastClick = lastClickTime[favName] or 0
+                    
+                    if currentTime - lastClick < DOUBLE_CLICK_TIME then
+                        -- Double click - remove from favorites
+                        toggleFavorite(favName)
+                        refreshScripts(searchQuery)
+                    else
+                        -- Single click - open file
+                        CurrentScriptFile = favName
+                        FileNameBox.Text = favName
+                        ScriptEditor.Text = readfile(fullPath)
+                        addToRecent(favName)
+                        for _, b in pairs(ScriptList:GetChildren()) do
+                            if b:IsA("TextButton") then 
+                                b.BackgroundColor3 = THEME.Sidebar 
+                            end
+                        end
+                        btn.BackgroundColor3 = THEME.Accent
+                    end
+                    
+                    lastClickTime[favName] = currentTime
+                end)
+                displayCount = displayCount + 1
+            end
+        end
+    end
     
     -- Show Recent Scripts section if no search
     if searchQuery == "" and #RecentScripts > 0 then
@@ -1065,15 +1158,27 @@ function refreshScripts(searchQuery)
             c.Parent = btn
             
             btn.MouseButton1Click:Connect(function()
-                CurrentScriptFile = name
-                FileNameBox.Text = name
-                ScriptEditor.Text = readfile(file)
-                addToRecent(name)
-                -- Highlight selection
-                for _, b in pairs(ScriptList:GetChildren()) do
-                    if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                local currentTime = tick()
+                local lastClick = lastClickTime[name] or 0
+                
+                if currentTime - lastClick < DOUBLE_CLICK_TIME then
+                    -- Double click - add to favorites
+                    toggleFavorite(name)
+                    refreshScripts(searchQuery)
+                else
+                    -- Single click - open file
+                    CurrentScriptFile = name
+                    FileNameBox.Text = name
+                    ScriptEditor.Text = readfile(file)
+                    addToRecent(name)
+                    -- Highlight selection
+                    for _, b in pairs(ScriptList:GetChildren()) do
+                        if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                    end
+                    btn.BackgroundColor3 = THEME.Accent
                 end
-                btn.BackgroundColor3 = THEME.Accent
+                
+                lastClickTime[name] = currentTime
             end)
             displayCount = displayCount + 1
         end
@@ -1098,6 +1203,13 @@ tabs["Scripts"].Button.MouseButton1Click:Connect(function()
 end)
 tabs["Settings"].Button.MouseButton1Click:Connect(function() switchTab("Settings") end)
 tabs["About"].Button.MouseButton1Click:Connect(function() switchTab("About") end)
+
+-- Refresh Button Event
+RefreshBtn.MouseButton1Click:Connect(function()
+    SearchBar.Text = ""
+    refreshScripts("")
+    notify("Scripts Refreshed!", THEME.Accent)
+end)
 
 -- Search Bar Event (Scripts tab)
 SearchBar:GetPropertyChangedSignal("Text"):Connect(function()
