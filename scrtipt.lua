@@ -11,6 +11,7 @@ local RunService = game:GetService("RunService")
 local ROOT = "XuanHub"
 local SCRIPTS_DIR = ROOT .. "/Scripts"
 local AUTOEXEC_DIR = ROOT .. "/Autoexecute"
+local FAVORITES_FILE = ROOT .. "/favorites.txt"
 
 if not isfolder(ROOT) then makefolder(ROOT) end
 if not isfolder(SCRIPTS_DIR) then makefolder(SCRIPTS_DIR) end
@@ -977,11 +978,29 @@ local FavoriteScripts = {}
 local lastClickTime = {}
 local DOUBLE_CLICK_TIME = 0.5 -- seconds
 
+local function saveFavorites()
+    local favString = table.concat(FavoriteScripts, "\n")
+    writefile(FAVORITES_FILE, favString)
+end
+
+local function loadFavorites()
+    if isfile(FAVORITES_FILE) then
+        local content = readfile(FAVORITES_FILE)
+        FavoriteScripts = {}
+        for line in content:gmatch("[^\n]+") do
+            if line ~= "" then
+                table.insert(FavoriteScripts, line)
+            end
+        end
+    end
+end
+
 local function toggleFavorite(fileName)
     -- Check if already favorited
     for i, name in ipairs(FavoriteScripts) do
         if name == fileName then
             table.remove(FavoriteScripts, i)
+            saveFavorites()
             notify("Removed from Favorites", THEME.Red)
             return
         end
@@ -989,6 +1008,7 @@ local function toggleFavorite(fileName)
     
     -- Add to favorites
     table.insert(FavoriteScripts, 1, fileName)
+    saveFavorites()
     notify("Added to Favorites! ⭐", THEME.Accent)
 end
 
@@ -1113,14 +1133,26 @@ function refreshScripts(searchQuery)
                 c.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
-                    CurrentScriptFile = recentName
-                    FileNameBox.Text = recentName
-                    ScriptEditor.Text = readfile(fullPath)
-                    addToRecent(recentName)
-                    for _, b in pairs(ScriptList:GetChildren()) do
-                        if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                    local currentTime = tick()
+                    local lastClick = lastClickTime[recentName] or 0
+                    
+                    if currentTime - lastClick < DOUBLE_CLICK_TIME then
+                        -- Double click - add to favorites
+                        toggleFavorite(recentName)
+                        refreshScripts(searchQuery)
+                    else
+                        -- Single click - open file
+                        CurrentScriptFile = recentName
+                        FileNameBox.Text = recentName
+                        ScriptEditor.Text = readfile(fullPath)
+                        addToRecent(recentName)
+                        for _, b in pairs(ScriptList:GetChildren()) do
+                            if b:IsA("TextButton") then b.BackgroundColor3 = THEME.Sidebar end
+                        end
+                        btn.BackgroundColor3 = THEME.Accent
                     end
-                    btn.BackgroundColor3 = THEME.Accent
+                    
+                    lastClickTime[recentName] = currentTime
                 end)
                 displayCount = displayCount + 1
             end
@@ -1228,5 +1260,6 @@ end)
 
 -- Init
 task.wait()
+loadFavorites()
 refreshAutoExec()
 switchTab("AutoExec")
